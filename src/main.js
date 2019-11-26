@@ -4,7 +4,7 @@ const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
 const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
 const newEventButton = document.querySelector(`.trip-main__event-add-btn`);
-let ESC_KEYCODE = 27;
+const ESC_KEYCODE = 27;
 
 const createSiteMenuTemplate = () => {
   return (
@@ -712,6 +712,82 @@ const render = (container, template, place) => {
   container.insertAdjacentHTML(place, template);
 };
 
+const setUpperCase = (str) => {
+  if (!str) {
+    return str;
+  }
+  return str[0].toUpperCase() + str.slice(1);
+};
+
+const setEventTypeText = (evt) => {
+  // set an text for an event:
+  let eventText = setUpperCase(evt.currentTarget.value);
+  switch (eventText) {
+    case `Taxi`:
+    case `Bus`:
+    case `Train`:
+    case `Ship`:
+    case `Transport`:
+    case `Drive`:
+    case `Flight`:
+      eventText = eventText + ` to`;
+      break;
+    case `Check-in`:
+      eventText = `Check into`;
+      break;
+    case `Sightseeing`:
+    case `Restaurant`:
+      eventText = eventText + ` at`;
+      break;
+  }
+  const eventTypeTextForm = document.getElementsByClassName(`event__type-output`)[0];
+  eventTypeTextForm.textContent = eventText;
+};
+
+const setEventTypeIcon = (evt) => {
+  const labelsCollection = document.getElementsByTagName(`label`);
+  // find corresponding input and label by comparing id and for attiubutes:
+  let eventTypeId = evt.currentTarget.id;
+  for (let j = 0; j < labelsCollection.length; j++) {
+    let labelForAttr = labelsCollection[j].getAttribute(`for`);
+    if (labelForAttr === eventTypeId) {
+      // find an image for the event:
+      let checkedEventImgSrc = window.getComputedStyle(
+          labelsCollection[j], `:before`
+      ).getPropertyValue(`background-image`);
+      // get source of image:
+      let splitSymbol = `public/`;
+      checkedEventImgSrc = checkedEventImgSrc.split(splitSymbol);
+      checkedEventImgSrc = checkedEventImgSrc[1];
+      checkedEventImgSrc = checkedEventImgSrc.split(`")`);
+      checkedEventImgSrc = checkedEventImgSrc[0];
+      // set an new image:
+      const eventImg = document.getElementsByClassName(`event__type-icon`)[0];
+      eventImg.setAttribute(`src`, checkedEventImgSrc);
+      break;
+    }
+  }
+};
+
+const onEventIconClick = (evt) => {
+  setEventTypeIcon(evt);
+  setEventTypeText(evt);
+};
+
+const setEventType = (action) => {
+  const eventTypeCollection = document.getElementsByClassName(`event__type-input`);
+  for (let i = 0; i < eventTypeCollection.length; i++) {
+    switch (action) {
+      case `addListeners`:
+        eventTypeCollection[i].addEventListener(`click`, onEventIconClick);
+        break;
+      case `removeListeners`:
+        eventTypeCollection[i].removeEventListener(`click`, onEventIconClick);
+    }
+  }
+};
+
+
 const onNewEventButtonClick = () => {
   closeEditForm();
   removePromptText();
@@ -722,6 +798,7 @@ const onNewEventButtonClick = () => {
   } else {
     render(events, createNewEventForm(), `afterend`);
   }
+  setEventType(`addListeners`);
   newEventButton.toggleAttribute(`disabled`);
   addFormBtnsListeners();
 };
@@ -757,6 +834,8 @@ const closeEditForm = () => {
   }
   // activate newEventButton:
   newEventButton.disabled = false;
+
+  setEventType(`removeListeners`);
 };
 
 const addFormBtnsListeners = () => {
@@ -776,6 +855,7 @@ const onSaveButtonClick = (evt) => {
     rollupBtnCollection[i].classList.add(`openEditForm`);
     rollupBtnCollection[i].addEventListener(`click`, onRollUpBntClick);
   }
+  // remove the form:
   removeNewEventForm();
 };
 
@@ -798,8 +878,6 @@ const createPromptText = () => {
     prompt.textContent = `Click New Event to create your first point`;
     const tripEvents = document.querySelector(`.trip-events`);
     tripEvents.append(prompt);
-  } else {
-    return;
   }
 };
 
