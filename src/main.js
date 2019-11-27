@@ -3,7 +3,7 @@
 const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(1)`);
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
 const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
-const newEventButton = document.querySelector(`.trip-main__event-add-btn`);
+const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
 const ESC_KEYCODE = 27;
 
 const createSiteMenuTemplate = () => {
@@ -774,7 +774,22 @@ const onEventIconClick = (evt) => {
   setEventTypeText(evt);
 };
 
-const setEventType = (action) => {
+const onEventListBtnClick = (evt) => {
+  evt.preventDefault();
+  const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
+  const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
+  eventTypeToggle.toggleAttribute(`checked`);
+  eventTypeList.style.display = eventTypeToggle.checked ? `block` : `none`;
+  if (eventTypeToggle.checked) {
+    document.removeEventListener(`keydown`, onEscKeyDownCloseForm);
+    document.addEventListener(`keydown`, onEscKeyDownCloseEventsList);
+  } else {
+    document.removeEventListener(`keydown`, onEscKeyDownCloseEventsList);
+    document.addEventListener(`keydown`, onEscKeyDownCloseForm);
+  }
+};
+
+const toggleListenersOfEventTypeOptions = (action) => {
   const eventTypeCollection = document.getElementsByClassName(`event__type-input`);
   for (let i = 0; i < eventTypeCollection.length; i++) {
     switch (action) {
@@ -788,8 +803,8 @@ const setEventType = (action) => {
 };
 
 
-const onNewEventButtonClick = () => {
-  closeEditForm();
+const onNewEventBtnClick = () => {
+  onCloseEditFormBtnClick();
   removePromptText();
   const events = document.getElementsByClassName(`trip-sort`)[0];
   // if there are no events add an first event:
@@ -798,32 +813,40 @@ const onNewEventButtonClick = () => {
   } else {
     render(events, createNewEventForm(), `afterend`);
   }
-  setEventType(`addListeners`);
-  newEventButton.toggleAttribute(`disabled`);
+  toggleListenersOfEventTypeOptions(`addListeners`);
+  newEventBtn.toggleAttribute(`disabled`);
   addFormBtnsListeners();
+  document.addEventListener(`keydown`, onEscKeyDownCloseForm);
+
+  const eventListBtn = document.getElementsByClassName(`event__type-btn`)[0];
+  eventListBtn.addEventListener(`click`, onEventListBtnClick);
+
 };
 
 const onRollUpBntClick = (evt) => {
-  closeEditForm();
+  // close current form:
+  onCloseEditFormBtnClick();
+  // check if an roll-up button has openEditForm class:
   if (evt.target.matches(`.openEditForm`)) {
+    // show editEventForm:
     const eventDiv = evt.target.closest(`.event`);
     render(eventDiv, createEditEventForm(), `afterend`);
-    // disable roll-up button that opens an edit form:
+    // disable roll-up button that had opened an edit form:
     evt.target.disabled = true;
     evt.target.classList.add(`disabledRollUpBtn`);
   }
   // add eventListener for close edit form:
   const editEventForm = document.getElementsByClassName(`event--edit`)[0];
   const closeEditFormBtn = editEventForm.getElementsByClassName(`event__rollup-btn`)[0];
-  closeEditFormBtn.addEventListener(`click`, closeEditForm);
+  closeEditFormBtn.addEventListener(`click`, onCloseEditFormBtnClick);
 };
 
-const closeEditForm = () => {
+const onCloseEditFormBtnClick = () => {
   const editEventForm = document.getElementsByClassName(`event--edit`)[0];
   if (editEventForm) {
     let closeEditFormBtn = editEventForm.getElementsByClassName(`event__rollup-btn`)[0];
     if (closeEditFormBtn) {
-      closeEditFormBtn.removeEventListener(`click`, closeEditForm);
+      closeEditFormBtn.removeEventListener(`click`, onCloseEditFormBtnClick);
     }
     editEventForm.remove();
     // enable an disabled roll-up button:
@@ -832,10 +855,33 @@ const closeEditForm = () => {
       disabledRollUpBtn[i].disabled = false;
     }
   }
-  // activate newEventButton:
-  newEventButton.disabled = false;
+  // activate newEventBtn:
+  newEventBtn.disabled = false;
 
-  setEventType(`removeListeners`);
+  toggleListenersOfEventTypeOptions(`removeListeners`);
+  document.removeEventListener(`keydown`, onEscKeyDownCloseForm);
+  const eventListBtn = document.getElementsByClassName(`event__type-btn`)[0];
+  if (eventListBtn) {
+    eventListBtn.removeEventListener(`click`, onEventListBtnClick);
+  }
+};
+
+const onEscKeyDownCloseForm = () => {
+  if (event.keyCode === ESC_KEYCODE) {
+    onCloseEditFormBtnClick();
+    createPromptText();
+  }
+};
+
+const onEscKeyDownCloseEventsList = () => {
+  if (event.keyCode === ESC_KEYCODE) {
+    const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
+    const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
+    eventTypeToggle.toggleAttribute(`checked`);
+    eventTypeList.style.display = `none`;
+    document.removeEventListener(`keydown`, onEscKeyDownCloseEventsList);
+    document.addEventListener(`keydown`, onEscKeyDownCloseForm);
+  }
 };
 
 const addFormBtnsListeners = () => {
@@ -866,13 +912,14 @@ const removeNewEventForm = () => {
   eventResetButton.removeEventListener(`click`, removeNewEventForm);
   eventSaveButton.removeEventListener(`click`, onSaveButtonClick);
   tripEventsForm.remove();
-  newEventButton.toggleAttribute(`disabled`);
+  newEventBtn.toggleAttribute(`disabled`);
   createPromptText();
 };
 
 const createPromptText = () => {
   const events = document.getElementsByClassName(`trip-sort`)[0];
-  if (!events) {
+  const promtText = document.getElementsByClassName(`prompt`)[0];
+  if (!events && !promtText) {
     const prompt = document.createElement(`h2`);
     prompt.classList.add(`prompt`);
     prompt.textContent = `Click New Event to create your first point`;
@@ -881,7 +928,7 @@ const createPromptText = () => {
   }
 };
 
-// remove the promt to click on the newEventButton:
+// remove the promt to click on the newEventBtn:
 const removePromptText = () => {
   const promptText = document.getElementsByClassName(`prompt`)[0];
   if (promptText) {
@@ -895,11 +942,4 @@ render(filterControlsHeader, createFilterTemplate(), `afterend`);
 
 createPromptText();
 
-newEventButton.addEventListener(`click`, onNewEventButtonClick);
-
-document.addEventListener(`keydown`, function (evt) {
-  if (evt.keyCode === ESC_KEYCODE) {
-    closeEditForm();
-    createPromptText();
-  }
-});
+newEventBtn.addEventListener(`click`, onNewEventBtnClick);
