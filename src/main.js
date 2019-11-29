@@ -940,7 +940,7 @@ const onEscKeyDownCloseForm = (evt) => {
   }
 };
 
-const onEscKeyDownCloseEventsList = () => {
+const onEscKeyDownCloseEventsList = (evt) => {
   if (evt.keyCode === ESC_KEYCODE) {
     const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
     const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
