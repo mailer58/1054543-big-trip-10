@@ -4,6 +4,7 @@ const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
 const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
 const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
+const pageBody = document.querySelector('body');
 const ESC_KEYCODE = 27;
 
 const createSiteMenuTemplate = () => {
@@ -708,10 +709,7 @@ const createEditEventForm = () => {
   );
 };
 
-const render = (container, template, place) => {
-  container.insertAdjacentHTML(place, template);
-};
-
+// utility:
 const setUpperCase = (str) => {
   if (!str) {
     return str;
@@ -719,6 +717,12 @@ const setUpperCase = (str) => {
   return str[0].toUpperCase() + str.slice(1);
 };
 
+// render html:
+const render = (container, template, place) => {
+  container.insertAdjacentHTML(place, template);
+};
+
+// set event type:
 const setEventTypeText = (evt) => {
   // set an text for an event:
   let eventText = setUpperCase(evt.currentTarget.value);
@@ -753,7 +757,7 @@ const setEventTypeIcon = (evt) => {
     if (labelForAttr === eventTypeId) {
       // find an image for the event:
       let checkedEventImgSrc = window.getComputedStyle(
-          labelsCollection[j], `:before`
+        labelsCollection[j], `:before`
       ).getPropertyValue(`background-image`);
       // get source of image:
       let splitSymbol = `public/`;
@@ -769,9 +773,63 @@ const setEventTypeIcon = (evt) => {
   }
 };
 
-const onEventIconClick = (evt) => {
+// toggle listeners of the event list:
+const toggleListenersOfEventListOptions = (action) => {
+  const eventTypeCollection = document.getElementsByClassName(`event__type-input`);
+  for (let i = 0; i < eventTypeCollection.length; i++) {
+    switch (action) {
+      case `addListeners`:
+        eventTypeCollection[i].addEventListener(`click`, onEventListOptionClick);
+        break;
+      case `removeListeners`:
+        eventTypeCollection[i].removeEventListener(`click`, onEventListOptionClick);
+    }
+  }
+};
+// remove newEventForm:
+const removeNewEventForm = () => {
+  const eventResetButton = document.getElementsByClassName(`event__reset-btn`)[0];
+  const eventSaveButton = document.getElementsByClassName(`event__save-btn`)[0];
+  const tripEventsForm = document.getElementsByClassName(`event--edit`)[0];
+  eventResetButton.removeEventListener(`click`, removeNewEventForm);
+  eventSaveButton.removeEventListener(`click`, onSaveButtonClick);
+  tripEventsForm.remove();
+  newEventBtn.toggleAttribute(`disabled`);
+  createPromptText();
+};
+
+// create the prompt:
+const createPromptText = () => {
+  const events = document.getElementsByClassName(`trip-sort`)[0];
+  const promptText = document.getElementsByClassName(`prompt`)[0];
+  if (!events && !promptText) {
+    const prompt = document.createElement(`h2`);
+    prompt.classList.add(`prompt`);
+    prompt.textContent = `Click New Event to create your first point`;
+    const tripEvents = document.querySelector(`.trip-events`);
+    tripEvents.append(prompt);
+  }
+};
+
+// remove the prompt:
+const removePromptText = () => {
+  const promptText = document.getElementsByClassName(`prompt`)[0];
+  if (promptText) {
+    promptText.remove();
+  }
+};
+
+// handlers:
+const onEventListOptionClick = (evt) => {
   setEventTypeIcon(evt);
   setEventTypeText(evt);
+  const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
+  const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
+  eventTypeList.style.display = `none`;
+  eventTypeToggle.toggleAttribute(`checked`);
+  document.removeEventListener(`keydown`, onEscKeyDownCloseEventsList);
+  document.addEventListener(`keydown`, onEscKeyDownCloseForm);
+  pageBody.removeEventListener('click', onPageBodyClickToCloseEventList);
 };
 
 const onEventListBtnClick = (evt) => {
@@ -787,21 +845,26 @@ const onEventListBtnClick = (evt) => {
     document.removeEventListener(`keydown`, onEscKeyDownCloseEventsList);
     document.addEventListener(`keydown`, onEscKeyDownCloseForm);
   }
+  pageBody.addEventListener('click', onPageBodyClickToCloseEventList);
 };
 
-const toggleListenersOfEventTypeOptions = (action) => {
-  const eventTypeCollection = document.getElementsByClassName(`event__type-input`);
-  for (let i = 0; i < eventTypeCollection.length; i++) {
-    switch (action) {
-      case `addListeners`:
-        eventTypeCollection[i].addEventListener(`click`, onEventIconClick);
-        break;
-      case `removeListeners`:
-        eventTypeCollection[i].removeEventListener(`click`, onEventIconClick);
+// hide eventList by click on the page:
+const onPageBodyClickToCloseEventList = (evt) => {
+  const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
+  const closingEventListDiv = document.getElementsByClassName('closingEventListDiv')[0];
+  const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
+  if (!evt.target.matches('.event__type-label') &&
+    !evt.target.matches('.event__type-btn') &&
+    !evt.target.matches('.event__type-icon') &&
+    !evt.target.matches('.event__type-input')) {
+
+    if (eventTypeToggle && eventTypeList) {
+      eventTypeToggle.toggleAttribute(`checked`);
+      eventTypeList.style.display = `none`;
     }
+    pageBody.removeEventListener('click', onPageBodyClickToCloseEventList);
   }
 };
-
 
 const onNewEventBtnClick = () => {
   onCloseEditFormBtnClick();
@@ -813,14 +876,18 @@ const onNewEventBtnClick = () => {
   } else {
     render(events, createNewEventForm(), `afterend`);
   }
-  toggleListenersOfEventTypeOptions(`addListeners`);
+  toggleListenersOfEventListOptions(`addListeners`);
   newEventBtn.toggleAttribute(`disabled`);
-  addFormBtnsListeners();
+  const eventResetButton = document.getElementsByClassName(`event__reset-btn`)[0];
+  const eventSaveButton = document.getElementsByClassName(`event__save-btn`)[0];
+  eventResetButton.addEventListener(`click`, removeNewEventForm);
+  eventSaveButton.addEventListener(`click`, onSaveButtonClick);
   document.addEventListener(`keydown`, onEscKeyDownCloseForm);
 
   const eventListBtn = document.getElementsByClassName(`event__type-btn`)[0];
   eventListBtn.addEventListener(`click`, onEventListBtnClick);
-
+  const eventTypeTextForm = document.getElementsByClassName(`event__type-output`)[0];
+  eventTypeTextForm.textContent = `Flight to`;
 };
 
 const onRollUpBntClick = (evt) => {
@@ -858,7 +925,7 @@ const onCloseEditFormBtnClick = () => {
   // activate newEventBtn:
   newEventBtn.disabled = false;
 
-  toggleListenersOfEventTypeOptions(`removeListeners`);
+  toggleListenersOfEventListOptions(`removeListeners`);
   document.removeEventListener(`keydown`, onEscKeyDownCloseForm);
   const eventListBtn = document.getElementsByClassName(`event__type-btn`)[0];
   if (eventListBtn) {
@@ -866,29 +933,23 @@ const onCloseEditFormBtnClick = () => {
   }
 };
 
-const onEscKeyDownCloseForm = () => {
-  if (event.keyCode === ESC_KEYCODE) {
+const onEscKeyDownCloseForm = (evt) => {
+  if (evt.keyCode === ESC_KEYCODE) {
     onCloseEditFormBtnClick();
     createPromptText();
   }
 };
 
 const onEscKeyDownCloseEventsList = () => {
-  if (event.keyCode === ESC_KEYCODE) {
+  if (evt.keyCode === ESC_KEYCODE) {
     const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
     const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
     eventTypeToggle.toggleAttribute(`checked`);
     eventTypeList.style.display = `none`;
     document.removeEventListener(`keydown`, onEscKeyDownCloseEventsList);
     document.addEventListener(`keydown`, onEscKeyDownCloseForm);
+    pageBody.removeEventListener('click', onPageBodyClickToCloseEventList);
   }
-};
-
-const addFormBtnsListeners = () => {
-  const eventResetButton = document.getElementsByClassName(`event__reset-btn`)[0];
-  const eventSaveButton = document.getElementsByClassName(`event__save-btn`)[0];
-  eventResetButton.addEventListener(`click`, removeNewEventForm);
-  eventSaveButton.addEventListener(`click`, onSaveButtonClick);
 };
 
 const onSaveButtonClick = (evt) => {
@@ -903,37 +964,6 @@ const onSaveButtonClick = (evt) => {
   }
   // remove the form:
   removeNewEventForm();
-};
-
-const removeNewEventForm = () => {
-  const eventResetButton = document.getElementsByClassName(`event__reset-btn`)[0];
-  const eventSaveButton = document.getElementsByClassName(`event__save-btn`)[0];
-  const tripEventsForm = document.getElementsByClassName(`event--edit`)[0];
-  eventResetButton.removeEventListener(`click`, removeNewEventForm);
-  eventSaveButton.removeEventListener(`click`, onSaveButtonClick);
-  tripEventsForm.remove();
-  newEventBtn.toggleAttribute(`disabled`);
-  createPromptText();
-};
-
-const createPromptText = () => {
-  const events = document.getElementsByClassName(`trip-sort`)[0];
-  const promtText = document.getElementsByClassName(`prompt`)[0];
-  if (!events && !promtText) {
-    const prompt = document.createElement(`h2`);
-    prompt.classList.add(`prompt`);
-    prompt.textContent = `Click New Event to create your first point`;
-    const tripEvents = document.querySelector(`.trip-events`);
-    tripEvents.append(prompt);
-  }
-};
-
-// remove the promt to click on the newEventBtn:
-const removePromptText = () => {
-  const promptText = document.getElementsByClassName(`prompt`)[0];
-  if (promptText) {
-    promptText.remove();
-  }
 };
 
 // render components:
