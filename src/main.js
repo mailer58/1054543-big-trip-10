@@ -4,7 +4,7 @@ const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
 const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
 const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
-const pageBody = document.querySelector('body');
+const pageBody = document.querySelector(`body`);
 const ESC_KEYCODE = 27;
 
 const createSiteMenuTemplate = () => {
@@ -757,7 +757,7 @@ const setEventTypeIcon = (evt) => {
     if (labelForAttr === eventTypeId) {
       // find an image for the event:
       let checkedEventImgSrc = window.getComputedStyle(
-        labelsCollection[j], `:before`
+          labelsCollection[j], `:before`
       ).getPropertyValue(`background-image`);
       // get source of image:
       let splitSymbol = `public/`;
@@ -829,7 +829,7 @@ const onEventListOptionClick = (evt) => {
   eventTypeToggle.toggleAttribute(`checked`);
   document.removeEventListener(`keydown`, onEscKeyDownCloseEventsList);
   document.addEventListener(`keydown`, onEscKeyDownCloseForm);
-  pageBody.removeEventListener('click', onPageBodyClickToCloseEventList);
+  pageBody.removeEventListener(`click`, onPageBodyClickToCloseEventList);
 };
 
 const onEventListBtnClick = (evt) => {
@@ -845,24 +845,23 @@ const onEventListBtnClick = (evt) => {
     document.removeEventListener(`keydown`, onEscKeyDownCloseEventsList);
     document.addEventListener(`keydown`, onEscKeyDownCloseForm);
   }
-  pageBody.addEventListener('click', onPageBodyClickToCloseEventList);
+  pageBody.addEventListener(`click`, onPageBodyClickToCloseEventList);
 };
 
 // hide eventList by click on the page:
 const onPageBodyClickToCloseEventList = (evt) => {
   const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
-  const closingEventListDiv = document.getElementsByClassName('closingEventListDiv')[0];
   const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
-  if (!evt.target.matches('.event__type-label') &&
-    !evt.target.matches('.event__type-btn') &&
-    !evt.target.matches('.event__type-icon') &&
-    !evt.target.matches('.event__type-input')) {
+  if (!evt.target.matches(`.event__type-label`) &&
+    !evt.target.matches(`.event__type-btn`) &&
+    !evt.target.matches(`.event__type-icon`) &&
+    !evt.target.matches(`.event__type-input`)) {
 
     if (eventTypeToggle && eventTypeList) {
       eventTypeToggle.toggleAttribute(`checked`);
       eventTypeList.style.display = `none`;
     }
-    pageBody.removeEventListener('click', onPageBodyClickToCloseEventList);
+    pageBody.removeEventListener(`click`, onPageBodyClickToCloseEventList);
   }
 };
 
@@ -948,7 +947,7 @@ const onEscKeyDownCloseEventsList = (evt) => {
     eventTypeList.style.display = `none`;
     document.removeEventListener(`keydown`, onEscKeyDownCloseEventsList);
     document.addEventListener(`keydown`, onEscKeyDownCloseForm);
-    pageBody.removeEventListener('click', onPageBodyClickToCloseEventList);
+    pageBody.removeEventListener(`click`, onPageBodyClickToCloseEventList);
   }
 };
 
