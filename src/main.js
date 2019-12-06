@@ -6,26 +6,13 @@ import {createNewEventForm,
   onEscKeyDownCloseForm, onSaveButtonClick,
   onCloseEditFormBtnClick
 } from './components/forms.js';
-import {render} from './components/utils.js';
-
+import {render, createPromptText} from './components/utils.js';
 
 const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(1)`);
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
 const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
 const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
 
-// create the prompt:
-const createPromptText = () => {
-  const events = document.getElementsByClassName(`trip-sort`)[0];
-  const promptText = document.getElementsByClassName(`prompt`)[0];
-  if (!events && !promptText) {
-    const prompt = document.createElement(`h2`);
-    prompt.classList.add(`prompt`);
-    prompt.textContent = `Click New Event to create your first point`;
-    const tripEvents = document.querySelector(`.trip-events`);
-    tripEvents.append(prompt);
-  }
-};
 
 // remove the prompt:
 const removePromptText = () => {
