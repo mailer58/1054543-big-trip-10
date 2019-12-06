@@ -6,16 +6,13 @@ import {createNewEventForm,
   onEscKeyDownCloseForm, onSaveButtonClick,
   onCloseEditFormBtnClick
 } from './components/forms.js';
+import {render} from './components/utils.js';
+
 
 const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(1)`);
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
 const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
 const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
-
-// render html:
-const render = (container, template, place) => {
-  container.insertAdjacentHTML(place, template);
-};
 
 // create the prompt:
 const createPromptText = () => {
