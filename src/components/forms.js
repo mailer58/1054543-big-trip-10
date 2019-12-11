@@ -358,16 +358,16 @@ const setEventTypeText = (evt) => {
 const setEventTypeIcon = (evt) => {
   const labelsCollection = document.getElementsByTagName(`label`);
   // find corresponding input and label by comparing id and for attiubutes:
-  let eventTypeId = evt.currentTarget.id;
-  for (let j = 0; j < labelsCollection.length; j++) {
-    let labelForAttr = labelsCollection[j].getAttribute(`for`);
+  const eventTypeId = evt.currentTarget.id;
+  for (let i of labelsCollection) {
+    const labelForAttr = i.getAttribute(`for`);
     if (labelForAttr === eventTypeId) {
       // find an image for the event:
       let checkedEventImgSrc = window.getComputedStyle(
-          labelsCollection[j], `:before`
+          i, `:before`
       ).getPropertyValue(`background-image`);
       // get source of image:
-      let splitSymbol = `img/`;
+      const splitSymbol = `img/`;
       checkedEventImgSrc = checkedEventImgSrc.split(splitSymbol);
       checkedEventImgSrc = checkedEventImgSrc[1];
       checkedEventImgSrc = checkedEventImgSrc.split(`")`);
@@ -383,13 +383,13 @@ const setEventTypeIcon = (evt) => {
 // toggle listeners of the event list:
 const toggleListenersOfEventListOptions = (action) => {
   const eventTypeCollection = document.getElementsByClassName(`event__type-input`);
-  for (let i = 0; i < eventTypeCollection.length; i++) {
+  for (let i of eventTypeCollection) {
     switch (action) {
       case `addListeners`:
-        eventTypeCollection[i].addEventListener(`click`, onEventListOptionClick);
+        i.addEventListener(`click`, onEventListOptionClick);
         break;
       case `removeListeners`:
-        eventTypeCollection[i].removeEventListener(`click`, onEventListOptionClick);
+        i.removeEventListener(`click`, onEventListOptionClick);
     }
   }
 };
@@ -402,7 +402,7 @@ const removeNewEventForm = () => {
   eventResetButton.removeEventListener(`click`, removeNewEventForm);
   eventSaveButton.removeEventListener(`click`, onSaveButtonClick);
   tripEventsForm.remove();
-  newEventBtn.toggleAttribute(`disabled`);
+  newEventBtn.disabled = false;
   createPromptText();
 };
 
@@ -413,7 +413,7 @@ const onEventListOptionClick = (evt) => {
   const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
   const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
   eventTypeList.style.display = `none`;
-  eventTypeToggle.toggleAttribute(`checked`);
+  eventTypeToggle.checked = true;
   document.removeEventListener(`keydown`, onEscKeyDownCloseEventsList);
   document.addEventListener(`keydown`, onEscKeyDownCloseForm);
   pageBody.removeEventListener(`click`, onPageBodyClickToCloseEventList);
@@ -423,7 +423,8 @@ const onEventListBtnClick = (evt) => {
   evt.preventDefault();
   const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
   const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
-  eventTypeToggle.toggleAttribute(`checked`);
+  eventTypeToggle.checked = !eventTypeToggle.checked;
+  console.log(eventTypeToggle.checked);
   eventTypeList.style.display = eventTypeToggle.checked ? `block` : `none`;
   if (eventTypeToggle.checked) {
     document.removeEventListener(`keydown`, onEscKeyDownCloseForm);
@@ -445,7 +446,7 @@ const onPageBodyClickToCloseEventList = (evt) => {
     !evt.target.matches(`.event__type-input`)) {
 
     if (eventTypeToggle && eventTypeList) {
-      eventTypeToggle.toggleAttribute(`checked`);
+      eventTypeToggle.checked = !eventTypeToggle.checked;
       eventTypeList.style.display = `none`;
     }
     pageBody.removeEventListener(`click`, onPageBodyClickToCloseEventList);
@@ -463,7 +464,7 @@ const onEscKeyDownCloseEventsList = (evt) => {
   if (evt.keyCode === ESC_KEYCODE) {
     const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
     const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
-    eventTypeToggle.toggleAttribute(`checked`);
+    eventTypeToggle.checked = !eventTypeToggle.checked;
     eventTypeList.style.display = `none`;
     document.removeEventListener(`keydown`, onEscKeyDownCloseEventsList);
     document.addEventListener(`keydown`, onEscKeyDownCloseForm);
@@ -477,9 +478,9 @@ const onSaveButtonClick = (evt) => {
   render(tripEventsHeader, createEventsCards(), `afterend`);
   const rollupBtnCollection = document.getElementsByClassName(`event__rollup-btn`);
   // add eventListeners on roll-up buttons:
-  for (let i = 0; i < rollupBtnCollection.length; i++) {
-    rollupBtnCollection[i].classList.add(`openEditForm`);
-    rollupBtnCollection[i].addEventListener(`click`, onRollUpBntClick);
+  for (let i of rollupBtnCollection) {
+    i.classList.add(`openEditForm`);
+    i.addEventListener(`click`, onRollUpBntClick);
   }
   // remove the form:
   removeNewEventForm();
@@ -506,15 +507,15 @@ const onRollUpBntClick = (evt) => {
 const onCloseEditFormBtnClick = () => {
   const editEventForm = document.getElementsByClassName(`event--edit`)[0];
   if (editEventForm) {
-    let closeEditFormBtn = editEventForm.getElementsByClassName(`event__rollup-btn`)[0];
+    const closeEditFormBtn = editEventForm.getElementsByClassName(`event__rollup-btn`)[0];
     if (closeEditFormBtn) {
       closeEditFormBtn.removeEventListener(`click`, onCloseEditFormBtnClick);
     }
     editEventForm.remove();
     // enable an disabled roll-up button:
     const disabledRollUpBtn = document.getElementsByClassName(`disabledRollUpBtn`);
-    for (let i = 0; i < disabledRollUpBtn.length; i++) {
-      disabledRollUpBtn[i].disabled = false;
+    for (let i of disabledRollUpBtn) {
+      i.disabled = false;
     }
   }
   // activate newEventBtn:

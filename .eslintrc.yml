@@ -8,3 +8,5 @@ env:
   commonjs: true
 
 extends: 'htmlacademy/es6'
+
+no-restricted-globals: ['error', 'event']

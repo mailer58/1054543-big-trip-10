@@ -1,4 +1,5 @@
-export {setUpperCase, render, createPromptText};
+export {setUpperCase, render, createPromptText,
+  removePromptText};
 const setUpperCase = (str) => {
   if (!str) {
     return str;
@@ -21,5 +22,13 @@ const createPromptText = () => {
     prompt.textContent = `Click New Event to create your first point`;
     const tripEvents = document.querySelector(`.trip-events`);
     tripEvents.append(prompt);
+  }
+};
+
+// remove the prompt:
+const removePromptText = () => {
+  const promptText = document.getElementsByClassName(`prompt`)[0];
+  if (promptText) {
+    promptText.remove();
   }
 };
