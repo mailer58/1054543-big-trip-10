@@ -14,8 +14,6 @@ const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`
 const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
 
 
-
-
 // handler:
 const onNewEventBtnClick = () => {
   onCloseEditFormBtnClick();

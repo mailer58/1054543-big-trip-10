@@ -424,7 +424,6 @@ const onEventListBtnClick = (evt) => {
   const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
   const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
   eventTypeToggle.checked = !eventTypeToggle.checked;
-  console.log(eventTypeToggle.checked);
   eventTypeList.style.display = eventTypeToggle.checked ? `block` : `none`;
   if (eventTypeToggle.checked) {
     document.removeEventListener(`keydown`, onEscKeyDownCloseForm);
