@@ -1,5 +1,5 @@
 export {setUpperCase, render, createPromptText,
-  removePromptText};
+  removePromptText, transformEventTypeText};
 const setUpperCase = (str) => {
   if (!str) {
     return str;
@@ -31,4 +31,27 @@ const removePromptText = () => {
   if (promptText) {
     promptText.remove();
   }
+};
+
+// get event type:
+const transformEventTypeText = (eventText) => {
+  switch (eventText) {
+    case `Taxi`:
+    case `Bus`:
+    case `Train`:
+    case `Ship`:
+    case `Transport`:
+    case `Drive`:
+    case `Flight`:
+      eventText = eventText + ` to`;
+      break;
+    case `Check-in`:
+      eventText = `Check into`;
+      break;
+    case `Sightseeing`:
+    case `Restaurant`:
+      eventText = eventText + ` at`;
+      break;
+  }
+  return eventText;
 };

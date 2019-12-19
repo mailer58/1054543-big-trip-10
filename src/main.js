@@ -8,6 +8,7 @@ import {createNewEventForm,
 } from './components/forms.js';
 import {render, createPromptText, removePromptText} from './components/utils.js';
 
+
 const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(1)`);
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
 const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
@@ -19,7 +20,7 @@ const onNewEventBtnClick = () => {
   onCloseEditFormBtnClick();
   removePromptText();
   const events = document.getElementsByClassName(`trip-sort`)[0];
-  // if there are no events add an first event:
+  // if there are no events add a first event:
   if (!events) {
     render(tripEventsHeader, createNewEventForm(), `afterend`);
   } else {
