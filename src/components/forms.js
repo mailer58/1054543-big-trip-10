@@ -1,9 +1,9 @@
 import {
-  setUpperCase,
   render,
   createPromptText,
   transformEventTypeText,
-  adjustTimeFormat
+  adjustTimeFormat,
+  setCase
 } from './utils.js';
 import {
   MONTHS_MAP
@@ -136,7 +136,7 @@ const createEventsListMarkUp = () => {
   for (const item of transfer) {
     eventsListMarkUp.push(`<div class="event__type-item">
     <input id="event-type-${item}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${item}">
-    <label class="event__type-label  event__type-label--${item}" for="event-type-${item}-1">${setUpperCase(item)}</label>
+    <label class="event__type-label  event__type-label--${item}" for="event-type-${item}-1">${setCase(item, `toUpperCase`)}</label>
   </div>`);
   }
   eventsListMarkUp.push(`</fieldset>
@@ -147,7 +147,7 @@ const createEventsListMarkUp = () => {
   for (const item of activity) {
     eventsListMarkUp.push(`<div class="event__type-item">
  <input id="event-type-${item}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${item}">
- <label class="event__type-label  event__type-label--${item}" for="event-type-${item}-1">${setUpperCase(item)}</label>
+ <label class="event__type-label  event__type-label--${item}" for="event-type-${item}-1">${setCase(item, `toUpperCase`)}</label>
 </div>`);
   }
   eventsListMarkUp.push(`</fieldset>
@@ -632,7 +632,7 @@ const transformTimeBetweenHtmlAndDesigFormats = (time, splitter, substitute, com
 // set event type:
 const setEventTypeText = (evt) => {
   // set an text for an event:
-  let eventText = setUpperCase(evt.currentTarget.value);
+  let eventText = setCase(evt.currentTarget.value, `toUpperCase`);
   eventText = transformEventTypeText(eventText);
   const eventTypeTextForm = document.getElementsByClassName(`event__type-output`)[0];
   eventTypeTextForm.textContent = eventText;

@@ -1,16 +1,23 @@
 export {
-  setUpperCase,
+  setCase,
   render,
   createPromptText,
   removePromptText,
   transformEventTypeText,
   adjustTimeFormat
 };
-const setUpperCase = (str) => {
+
+const setCase = (str, action) => {
   if (!str) {
     return str;
   }
-  return str[0].toUpperCase() + str.slice(1);
+  let outputString;
+  if (action === `toUpperCase`) {
+    outputString = str[0].toUpperCase() + str.slice(1);
+  } else if (action === `toLowerCase`) {
+    outputString = str[0].toLowerCase() + str.slice(1);
+  }
+  return outputString;
 };
 
 // render html:

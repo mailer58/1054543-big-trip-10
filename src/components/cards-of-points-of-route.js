@@ -6,7 +6,8 @@ import {
 } from './../const.js';
 
 import {
-  adjustTimeFormat
+  adjustTimeFormat,
+  setCase
 } from './utils.js';
 
 
@@ -18,12 +19,13 @@ export {
 // mark-up:
 
 const createMarkUpForPointOfRoute = (sameDatePointOfRoute) => {
-const [startHours, startMinutes] = getHoursMinutesForPointTime(sameDatePointOfRoute.startTime);
-const [endHours, endMinutes] = getHoursMinutesForPointTime(sameDatePointOfRoute.endTime);
+  const [startHours, startMinutes] = getHoursMinutesForPointTime(sameDatePointOfRoute.startTime);
+  const [endHours, endMinutes] = getHoursMinutesForPointTime(sameDatePointOfRoute.endTime);
+  const icon = setCase(sameDatePointOfRoute.eventIcon, `toLowerCase`);
   return `<li class="trip-events__item">
   <div class="event">
     <div class="event__type">
-      <img class="event__type-icon" width="42" height="42" src="img/icons/${sameDatePointOfRoute.eventIcon}.png" alt="Event type icon">
+      <img class="event__type-icon" width="42" height="42" src="img/icons/${icon}.png" alt="Event type icon">
     </div>
     <h3 class="event__title">${sameDatePointOfRoute.eventType + ` ` + sameDatePointOfRoute.destination}</h3>
 
@@ -112,11 +114,11 @@ const createDateTime = (event, sameDatePointOfRoute) => {
   if (event === `start` || `yearMonthDay`) {
     const startYear = sameDatePointOfRoute.startTime.getFullYear();
     let startMonth = sameDatePointOfRoute.startTime.getMonth();
-    const startDay = adjustTimeFormat(sameDatePointOfRoute.startTime.getDate);
+    const startDay = adjustTimeFormat(sameDatePointOfRoute.startTime.getDate());
     if (event === `start`) {
+      startMonth = startMonth + 1; // month + 1 => get html format
       const startHour = adjustTimeFormat(sameDatePointOfRoute.startTime.getHours());
       const startMinute = adjustTimeFormat(sameDatePointOfRoute.startTime.getMinutes());
-      startMonth = startMonth + 1; // month + 1 => get html format
       startMonth = adjustTimeFormat(startMonth);
       dateTime = `${startYear}-${startMonth}-${startDay}T${startHour}:${startMinute}`;
     }
@@ -138,25 +140,24 @@ const createDateTime = (event, sameDatePointOfRoute) => {
 };
 
 // get time difference between end and start of event:
+const getEventDuration = (event) => {
+  const minute = 1000 * 60;
+  const hour = minute * 60;
+  const day = hour * 24;
 
-  const getEventDuration = (event) => {
-    const minute = 1000 * 60;
-    const hour = minute * 60;
-    const day = hour * 24;
-  
-    const diff = event.endTime - event.startTime;
-  
-    const days = Math.floor(diff / day);
-    const hours = Math.floor((diff - days * day) / hour);
-    const minutes = Math.floor((diff - days * day - hours * hour) / minute);
-  
-    if (days) {
-      return `${days}D ${hours}H ${minutes}M`;
-    } else if (hours) {
-      return `${hours}D ${minutes}M`;
-    }
-    return `${minutes}M`;
-  };
+  const diff = event.endTime - event.startTime;
+
+  const days = Math.floor(diff / day);
+  const hours = Math.floor((diff - days * day) / hour);
+  const minutes = Math.floor((diff - days * day - hours * hour) / minute);
+
+  if (days) {
+    return `${days}D ${hours}H ${minutes}M`;
+  } else if (hours) {
+    return `${hours}D ${minutes}M`;
+  }
+  return `${minutes}M`;
+};
 
 
 // get hours and minutes for mark-up:
@@ -195,7 +196,7 @@ const createDaysCounters = (pointsOfRoute) => {
   }
   // pick quantity of sets of days
   const quantityOfSetsOfDays = numberOfDaySet;
-  return [pointsOfRoute, quantityOfSetsOfDays];;
+  return [pointsOfRoute, quantityOfSetsOfDays];
 };
 
 const createMapOfSetsOfSameDays = (pointsOfRoute) => {
