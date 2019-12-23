@@ -2,7 +2,8 @@ import {
   setUpperCase,
   render,
   createPromptText,
-  transformEventTypeText
+  transformEventTypeText,
+  adjustTimeFormat
 } from './utils.js';
 import {
   MONTHS_MAP
@@ -260,7 +261,7 @@ const generateOffersMarkUpInEditForm = (pointOfRoute) => {
 
   <div class="event__available-offers">`);
     for (const offer of pointOfRoute.offers) {
-      const isChecked = offer.isChecked === true ? `checked` : ``;
+      const isChecked = offer.isChecked ? `checked` : ``;
       offers.push(
           `<div class="event__offer-selector">
       <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.name}-1" type="checkbox" name="event-offer-${offer.name}" ${isChecked}>
@@ -352,7 +353,7 @@ const onSaveButtonClick = (evt) => {
   if (!tripEventSortMenu) {
     render(tripEventsHeader, createTripSortMenu(), `afterend`);
   }
-  // generate an array of pointf of route:
+  // generate an array of points of route:
   pointsOfRoute = generatePointsOfRoute(numberOfPointsOfRoute);
   // show list of events:
   render(tripEventsSection, createEventCards(pointsOfRoute), `beforeend`);
@@ -509,7 +510,7 @@ const computeTotalPrice = () => {
     totalPrice = totalPrice + pointOfRoute.price;
     if (pointOfRoute.offers.length !== 0) {
       for (const offer of pointOfRoute.offers) {
-        if (offer.isChecked === true) {
+        if (offer.isChecked) {
           totalPrice = totalPrice + offer.price;
         }
       }
@@ -529,13 +530,13 @@ const findPointOfRouteInArray = (startTime, arrayOfEvents) => {
     const entryStartTimeYear = entry.startTime.getFullYear();
     let entryStartTimeMonth = entry.startTime.getMonth();
     entryStartTimeMonth = entryStartTimeMonth + 1;
-    entryStartTimeMonth = entryStartTimeMonth > 9 ? entryStartTimeMonth : `0` + entryStartTimeMonth;
+    entryStartTimeMonth = adjustTimeFormat(entryStartTimeMonth);
     let entryStartTimeDay = entry.startTime.getDate();
-    entryStartTimeDay = entryStartTimeDay > 9 ? entryStartTimeDay : `0` + entryStartTimeDay;
+    entryStartTimeDay = adjustTimeFormat(entryStartTimeDay);
     let entryStartTimeHours = entry.startTime.getHours();
-    entryStartTimeHours = entryStartTimeHours > 9 ? entryStartTimeHours : `0` + entryStartTimeHours;
+    entryStartTimeHours = adjustTimeFormat(entryStartTimeHours);
     let entryStartTimeMinutes = entry.startTime.getMinutes();
-    entryStartTimeMinutes = entryStartTimeMinutes > 9 ? entryStartTimeMinutes : `0` + entryStartTimeMinutes;
+    entryStartTimeMinutes = adjustTimeFormat(entryStartTimeMinutes);
 
     const entryStartTime = entryStartTimeYear + `-` + entryStartTimeMonth +
       `-` + entryStartTimeDay + `T` + entryStartTimeHours +
@@ -617,7 +618,7 @@ const savePointOfRoute = () => {
   currentPointOfRoute.eventIcon = eventIcon;
 
   for (let i = 0; i < offersCollection.length; i++) {
-    currentPointOfRoute.offers[i].isChecked = offersCollection[i].checked ? true : false;
+    currentPointOfRoute.offers[i].isChecked = offersCollection[i].checked;
   }
 };
 
@@ -653,7 +654,7 @@ const setEventTypeIcon = (evt) => {
       checkedEventImgSrc = checkedEventImgSrc.split(splitSymbol);
       checkedEventImgSrc = checkedEventImgSrc[1];
       checkedEventImgSrc = checkedEventImgSrc.split(`")`);
-      checkedEventImgSrc = `img/` + checkedEventImgSrc[0];
+      checkedEventImgSrc = `/img/` + checkedEventImgSrc[0];
       // set an new image:
       const editForm = document.getElementsByClassName(`event--edit`)[0];
       const eventImg = editForm.getElementsByClassName(`event__type-icon`)[0];
@@ -711,8 +712,8 @@ const renderTripInfo = () => {
     const startMonth = MONTHS_MAP.get(startTime.getMonth());
     const endMonth = MONTHS_MAP.get(endTime.getMonth());
     // adjust time values:
-    const startDay = startTime.getDate() > 9 ? startTime.getDate() : `0` + startTime.getDate();
-    const endDay = endTime.getDate() > 9 ? endTime.getDate() : `0` + endTime.getDate();
+    const startDay = adjustTimeFormat(startTime.getDate());
+    const endDay = adjustTimeFormat(endTime.getDate());
 
     // adjust time output:
     let time;

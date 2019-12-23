@@ -1,5 +1,11 @@
-export {setUpperCase, render, createPromptText,
-  removePromptText, transformEventTypeText};
+export {
+  setUpperCase,
+  render,
+  createPromptText,
+  removePromptText,
+  transformEventTypeText,
+  adjustTimeFormat
+};
 const setUpperCase = (str) => {
   if (!str) {
     return str;
@@ -54,4 +60,10 @@ const transformEventTypeText = (eventText) => {
       break;
   }
   return eventText;
+};
+
+// add zero to format of time if there is necessity:
+const adjustTimeFormat = (eventTime) => {
+  const time = eventTime > 9 ? eventTime : `0` + eventTime;
+  return time;
 };

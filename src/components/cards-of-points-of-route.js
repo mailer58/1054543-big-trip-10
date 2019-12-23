@@ -5,6 +5,10 @@ import {
   MONTHS_MAP
 } from './../const.js';
 
+import {
+  adjustTimeFormat
+} from './utils.js';
+
 
 export {
   createEventCards
@@ -14,10 +18,8 @@ export {
 // mark-up:
 
 const createMarkUpForPointOfRoute = (sameDatePointOfRoute) => {
-  const startHours = getHoursMinutesForStartEndTime(sameDatePointOfRoute, `startTime`)[0];
-  const startMinutes = getHoursMinutesForStartEndTime(sameDatePointOfRoute, `startTime`)[1];
-  const endHours = getHoursMinutesForStartEndTime(sameDatePointOfRoute, `endTime`)[0];
-  const endMinutes = getHoursMinutesForStartEndTime(sameDatePointOfRoute, `endTime`)[1];
+const [startHours, startMinutes] = getHoursMinutesForPointTime(sameDatePointOfRoute.startTime);
+const [endHours, endMinutes] = getHoursMinutesForPointTime(sameDatePointOfRoute.endTime);
   return `<li class="trip-events__item">
   <div class="event">
     <div class="event__type">
@@ -31,7 +33,7 @@ const createMarkUpForPointOfRoute = (sameDatePointOfRoute) => {
         &mdash;
         <time class="event__end-time" datetime="${createDateTime(`end`, sameDatePointOfRoute)}">${endHours + `:` + endMinutes}</time>
       </p>
-      <p class="event__duration">${getTimeDifference(sameDatePointOfRoute)}</p>
+      <p class="event__duration">${getEventDuration(sameDatePointOfRoute)}</p>
     </div>
 
     <p class="event__price">
@@ -88,7 +90,7 @@ const createEventCards = (pointsOfRoute) => {
 const createOffers = (offers) => {
   const offersMarkUp = [];
   for (const offer of offers) {
-    if (offer.isChecked === true) {
+    if (offer.isChecked) {
       offersMarkUp.push(
           `<li class="event__offer">
        <span class="event__offer-title">${offer.type + ` ` + offer.name}</span>
@@ -110,12 +112,12 @@ const createDateTime = (event, sameDatePointOfRoute) => {
   if (event === `start` || `yearMonthDay`) {
     const startYear = sameDatePointOfRoute.startTime.getFullYear();
     let startMonth = sameDatePointOfRoute.startTime.getMonth();
-    const startDay = sameDatePointOfRoute.startTime.getDate() > 9 ? sameDatePointOfRoute.startTime.getDate() : `0` + sameDatePointOfRoute.startTime.getDate();
+    const startDay = adjustTimeFormat(sameDatePointOfRoute.startTime.getDate);
     if (event === `start`) {
-      const startHour = sameDatePointOfRoute.startTime.getHours() > 9 ? sameDatePointOfRoute.startTime.getHours() : `0` + sameDatePointOfRoute.startTime.getHours();
-      const startMinute = sameDatePointOfRoute.startTime.getMinutes() > 9 ? sameDatePointOfRoute.startTime.getMinutes() : `0` + sameDatePointOfRoute.startTime.getMinutes();
+      const startHour = adjustTimeFormat(sameDatePointOfRoute.startTime.getHours());
+      const startMinute = adjustTimeFormat(sameDatePointOfRoute.startTime.getMinutes());
       startMonth = startMonth + 1; // month + 1 => get html format
-      startMonth = startMonth > 9 ? startMonth : `0` + startMonth;
+      startMonth = adjustTimeFormat(startMonth);
       dateTime = `${startYear}-${startMonth}-${startDay}T${startHour}:${startMinute}`;
     }
     if (event === `yearMonthDay`) {
@@ -126,93 +128,43 @@ const createDateTime = (event, sameDatePointOfRoute) => {
     const endYear = sameDatePointOfRoute.endTime.getFullYear();
     let endMonth = sameDatePointOfRoute.endTime.getMonth();
     endMonth = endMonth + 1;
-    endMonth = endMonth > 9 ? endMonth : `0` + endMonth;
-    const endDay = sameDatePointOfRoute.endTime.getDate() > 9 ? sameDatePointOfRoute.endTime.getDate() : `0` + sameDatePointOfRoute.endTime.getDate();
-    const endHour = sameDatePointOfRoute.endTime.getHours() > 9 ? sameDatePointOfRoute.endTime.getHours() : `0` + sameDatePointOfRoute.endTime.getHours();
-    const endMinute = sameDatePointOfRoute.endTime.getMinutes() > 9 ? sameDatePointOfRoute.endTime.getMinutes() : `0` + sameDatePointOfRoute.endTime.getMinutes();
+    endMonth = adjustTimeFormat(endMonth);
+    const endDay = adjustTimeFormat(sameDatePointOfRoute.endTime.getDate());
+    const endHour = adjustTimeFormat(sameDatePointOfRoute.endTime.getHours());
+    const endMinute = adjustTimeFormat(sameDatePointOfRoute.endTime.getMinutes());
     dateTime = `${endYear}-${endMonth}-${endDay}T${endHour}:${endMinute}`;
   }
   return dateTime;
 };
 
 // get time difference between end and start of event:
-const getTimeDifference = (sameDatePointOfRoute) => {
-  const oneMinute = 1000 * 60;
-  const oneHour = 1000 * 60 * 60;
-  const oneDay = 1000 * 60 * 60 * 24;
 
-  let eventDurationDiffDaysRound;
-  let eventDurationDiffHoursRound;
-  let eventDurationDiffMinutesRound;
+  const getEventDuration = (event) => {
+    const minute = 1000 * 60;
+    const hour = minute * 60;
+    const day = hour * 24;
+  
+    const diff = event.endTime - event.startTime;
+  
+    const days = Math.floor(diff / day);
+    const hours = Math.floor((diff - days * day) / hour);
+    const minutes = Math.floor((diff - days * day - hours * hour) / minute);
+  
+    if (days) {
+      return `${days}D ${hours}H ${minutes}M`;
+    } else if (hours) {
+      return `${hours}D ${minutes}M`;
+    }
+    return `${minutes}M`;
+  };
 
-  // get start and end time:
-  const startTimeOfEvent = sameDatePointOfRoute.startTime;
-  const endTimeOfEvent = sameDatePointOfRoute.endTime;
-
-  // get difference between the end and the start of event:
-  const eventDurationDiff = endTimeOfEvent - startTimeOfEvent;
-
-  // get total number of days:
-  const eventDurationDiffDaysTotal = eventDurationDiff / oneDay;
-
-  // get round value of a day:
-  eventDurationDiffDaysRound = String(eventDurationDiffDaysTotal).split(`.`);
-  eventDurationDiffDaysRound = eventDurationDiffDaysRound[0];
-
-  // get total number of hours:
-  const eventDurationDiffHoursTotal = eventDurationDiff / oneHour;
-
-  // get difference between total number of hours and number of hours
-  // that consist in rounded days:
-  eventDurationDiffHoursRound = eventDurationDiffHoursTotal - eventDurationDiffDaysRound * 24;
-  eventDurationDiffHoursRound = String(eventDurationDiffHoursRound).split(`.`);
-  eventDurationDiffHoursRound = eventDurationDiffHoursRound[0];
-
-  // get total number of minutes:
-  const eventDurationDiffMinutesTotal = eventDurationDiff / oneMinute;
-
-  // get difference in minutes:
-  eventDurationDiffMinutesRound = eventDurationDiffMinutesTotal - (eventDurationDiffDaysRound * 24 * 60) - eventDurationDiffHoursRound * 60;
-  eventDurationDiffMinutesRound = String(eventDurationDiffMinutesRound).split(`.`);
-  eventDurationDiffMinutesRound = eventDurationDiffMinutesRound[0];
-
-  // adjust values of time:
-  eventDurationDiffDaysRound = eventDurationDiffDaysRound > 9 ? eventDurationDiffDaysRound : `0` + eventDurationDiffDaysRound;
-  eventDurationDiffHoursRound = eventDurationDiffHoursRound > 9 ? eventDurationDiffHoursRound : `0` + eventDurationDiffHoursRound;
-  eventDurationDiffMinutesRound = eventDurationDiffMinutesRound > 9 ? eventDurationDiffMinutesRound : `0` + eventDurationDiffMinutesRound;
-
-  // adjust output of time:
-  let outputTime;
-  switch (true) {
-    case eventDurationDiff / oneDay >= 1: // output: days hours minutes
-      outputTime = eventDurationDiffDaysRound + `D ` + eventDurationDiffHoursRound + `H ` + eventDurationDiffMinutesRound + `M`;
-      break;
-    case eventDurationDiff / oneHour >= 1: // output: hours minutes
-      outputTime = eventDurationDiffHoursRound + `H ` + eventDurationDiffMinutesRound + `M`;
-      break;
-    case eventDurationDiff / oneHour < 1: // output: minutes
-      outputTime = eventDurationDiffMinutesRound + `M`;
-      break;
-  }
-  return outputTime;
-};
 
 // get hours and minutes for mark-up:
-const getHoursMinutesForStartEndTime = (pointOfRoute, event) => {
-  let hours;
-  let minutes;
-  if (event === `startTime`) {
-    hours = pointOfRoute.startTime.getHours();
-    hours = hours > 9 ? hours : `0` + hours;
-    minutes = pointOfRoute.startTime.getMinutes();
-    minutes = minutes > 9 ? minutes : `0` + minutes;
-  }
-  if (event === `endTime`) {
-    hours = pointOfRoute.endTime.getHours();
-    hours = hours > 9 ? hours : `0` + hours;
-    minutes = pointOfRoute.endTime.getMinutes();
-    minutes = minutes > 9 ? minutes : `0` + minutes;
-  }
+const getHoursMinutesForPointTime = (pointTime) => {
+  let hours = pointTime.getHours();
+  hours = adjustTimeFormat(hours);
+  let minutes = pointTime.getMinutes();
+  minutes = adjustTimeFormat(minutes);
   return [hours, minutes];
 };
 
@@ -243,8 +195,7 @@ const createDaysCounters = (pointsOfRoute) => {
   }
   // pick quantity of sets of days
   const quantityOfSetsOfDays = numberOfDaySet;
-  const returnedArray = [pointsOfRoute, quantityOfSetsOfDays];
-  return returnedArray;
+  return [pointsOfRoute, quantityOfSetsOfDays];;
 };
 
 const createMapOfSetsOfSameDays = (pointsOfRoute) => {
