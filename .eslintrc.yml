@@ -11,5 +11,7 @@
 "extends": 'htmlacademy/es6',
 "rules": {
 "no-restricted-globals": ['error', 'event'],
+"prefer-const": 'error',
+"no-else-return": 'error'
 }
 }

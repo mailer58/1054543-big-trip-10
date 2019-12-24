@@ -1,10 +1,23 @@
-export {setUpperCase, render, createPromptText,
-  removePromptText};
-const setUpperCase = (str) => {
+export {
+  setCase,
+  render,
+  createPromptText,
+  removePromptText,
+  transformEventTypeText,
+  adjustTimeFormat
+};
+
+const setCase = (str, action) => {
   if (!str) {
     return str;
   }
-  return str[0].toUpperCase() + str.slice(1);
+  let outputString;
+  if (action === `toUpperCase`) {
+    outputString = str[0].toUpperCase() + str.slice(1);
+  } else if (action === `toLowerCase`) {
+    outputString = str[0].toLowerCase() + str.slice(1);
+  }
+  return outputString;
 };
 
 // render html:
@@ -31,4 +44,33 @@ const removePromptText = () => {
   if (promptText) {
     promptText.remove();
   }
+};
+
+// get event type:
+const transformEventTypeText = (eventText) => {
+  switch (eventText) {
+    case `Taxi`:
+    case `Bus`:
+    case `Train`:
+    case `Ship`:
+    case `Transport`:
+    case `Drive`:
+    case `Flight`:
+      eventText = eventText + ` to`;
+      break;
+    case `Check-in`:
+      eventText = `Check into`;
+      break;
+    case `Sightseeing`:
+    case `Restaurant`:
+      eventText = eventText + ` at`;
+      break;
+  }
+  return eventText;
+};
+
+// add zero to format of time if there is necessity:
+const adjustTimeFormat = (eventTime) => {
+  const time = eventTime > 9 ? eventTime : `0` + eventTime;
+  return time;
 };
