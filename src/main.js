@@ -1,37 +1,76 @@
-import {createSiteMenuTemplate} from './components/site-menu.js';
-import {createFilterTemplate} from './components/filter.js';
-import {createNewEventForm,
-  toggleListenersOfEventListOptions,
-  removeNewEventForm, onEventListBtnClick,
-  onEscKeyDownCloseForm, onSaveButtonClick,
-  onCloseEditFormBtnClick
-} from './components/forms.js';
-import {render, createPromptText, removePromptText} from './components/utils.js';
+import {
+  generatePointsOfRoute,
+} from './mock/point-of-route.js';
 
+import
+EventCardComponent
+from './components/cards-of-points-of-route.js';
+
+import
+SiteMenuComponent
+from './components/site-menu.js';
+
+import
+FilterComponent
+from './components/filter.js';
+
+import NewEventFormComponent, {
+  toggleListenersOfEventListOptions,
+  removeNewEventForm,
+  onEventListBtnClick,
+  onEscKeyDownCloseForm,
+  onSaveBtnOfNewEventFormClick,
+  onCloseEditFormBtnClick,
+  toggleEventListenersForRollUpBtns
+} from './components/forms.js';
+
+import {
+  render,
+  createPromptText,
+  removePromptText,
+  RenderPosition,
+  computeTotalPrice,
+  renderTripInfo
+} from './utils.js';
+
+import
+TripSortMenuComponent
+from './components/trip-sort-menu.js';
+
+
+const numberOfPointsOfRoute = 5;
 
 const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(1)`);
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
 const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
 const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
 
+let pointsOfRoute; // array of points of route
+
+export {
+  pointsOfRoute
+};
 
 // handler:
 const onNewEventBtnClick = () => {
   onCloseEditFormBtnClick();
   removePromptText();
-  const events = document.getElementsByClassName(`trip-sort`)[0];
-  // if there are no events add a first event:
-  if (!events) {
-    render(tripEventsHeader, createNewEventForm(), `afterend`);
+  const tripSortMenu = document.getElementsByClassName(`trip-sort`)[0];
+  // render newEventForm:
+  const newEventForm = new NewEventFormComponent();
+  if (!tripSortMenu) {
+    render(tripEventsHeader, newEventForm.getElement(), RenderPosition.AFTER);
   } else {
-    render(events, createNewEventForm(), `afterend`);
+    render(tripSortMenu, newEventForm.getElement(), RenderPosition.AFTER);
   }
+
   toggleListenersOfEventListOptions(`addListeners`);
   newEventBtn.toggleAttribute(`disabled`);
   const eventResetButton = document.getElementsByClassName(`event__reset-btn`)[0];
   const eventSaveButton = document.getElementsByClassName(`event__save-btn`)[0];
+  eventSaveButton.classList.add('new-event');
   eventResetButton.addEventListener(`click`, removeNewEventForm);
-  eventSaveButton.addEventListener(`click`, onSaveButtonClick);
+  eventSaveButton.addEventListener(`click`, onSaveBtnOfNewEventFormClick);
   document.addEventListener(`keydown`, onEscKeyDownCloseForm);
 
   const eventListBtn = document.getElementsByClassName(`event__type-btn`)[0];
@@ -41,9 +80,29 @@ const onNewEventBtnClick = () => {
 };
 
 // render components:
-render(tripControlsHeader, createSiteMenuTemplate(), `afterend`);
-render(filterControlsHeader, createFilterTemplate(), `afterend`);
-
-createPromptText();
+const siteMenu = new SiteMenuComponent();
+render(tripControlsHeader, siteMenu.getElement(), RenderPosition.AFTER);
+const filter = new FilterComponent();
+render(filterControlsHeader, filter.getElement(), RenderPosition.AFTER);
 
 newEventBtn.addEventListener(`click`, onNewEventBtnClick);
+
+// show sorting menu:
+const tripSortMenu = new TripSortMenuComponent();
+render(tripEventsHeader, tripSortMenu.getElement(), RenderPosition.AFTER);
+
+// generate an array of points of route:
+pointsOfRoute = generatePointsOfRoute(numberOfPointsOfRoute);
+
+// show list of events:
+const tripSortMenuMarkUp = document.getElementsByClassName('trip-events__trip-sort')[0];
+const eventCards = new EventCardComponent(pointsOfRoute);
+render(tripSortMenuMarkUp, eventCards.getElement(pointsOfRoute), RenderPosition.AFTER);
+
+// add event listeners for roll-up buttons:
+toggleEventListenersForRollUpBtns(`addListeners`);
+
+// compute and show total price:
+computeTotalPrice(pointsOfRoute);
+
+renderTripInfo(pointsOfRoute);

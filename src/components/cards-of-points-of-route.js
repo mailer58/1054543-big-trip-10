@@ -7,8 +7,9 @@ import {
 
 import {
   adjustTimeFormat,
-  setCase
-} from './utils.js';
+  setCase,
+  createElement
+} from './../utils.js';
 
 
 export {
@@ -87,6 +88,28 @@ const createEventCards = (pointsOfRoute) => {
   }
   return pointsOfRouteMarkUp.join(`\n`);
 };
+
+export default class EventCardComponent {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate(events) {
+    return createEventCards(events);
+  }
+
+  getElement(events) {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate(events));
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
 
 // create mark-up for offers in list of events:
 const createOffers = (offers) => {

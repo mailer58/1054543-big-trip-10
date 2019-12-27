@@ -1,6 +1,10 @@
+import {
+  createElement
+} from './../utils.js';
+
 const tripSortItems = [`event`, `time`, `price`];
 
-export const createTripSortMenu = () => {
+const createTripSortMenu = () => {
   let tripSortMenuMarkUp = [];
   tripSortMenuMarkUp.push(`<form class="trip-events__trip-sort  trip-sort" action="#" method="get">
   <span class="trip-sort__item  trip-sort__item--day">Day</span>`);
@@ -16,7 +20,7 @@ export const createTripSortMenu = () => {
                      </svg>`);
     }
     tripSortMenuMarkUp.push(
-        `</label>
+      `</label>
      </div>`);
   }
 
@@ -26,3 +30,25 @@ export const createTripSortMenu = () => {
   tripSortMenuMarkUp = tripSortMenuMarkUp.join(`\n`);
   return tripSortMenuMarkUp;
 };
+
+export default class TripSortMenuComponent {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripSortMenu();
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

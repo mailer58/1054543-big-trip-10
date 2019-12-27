@@ -1,6 +1,6 @@
 import {
   transformEventTypeText
-} from './../components/utils.js';
+} from './../utils.js';
 
 export {
   generatePointsOfRoute,
@@ -112,8 +112,8 @@ const generatePointOfRoute = () => {
     eventType: transformEventTypeText(eventText),
     destination: getRandomItemFromArray(DESTINATIONS),
     eventIcon: eventText,
-    startTime,
-    endTime,
+    startTime: startTime,
+    endTime: endTime,
     price: getRandomInteger(1, 1000),
     photo: randomPhoto,
     description: getRandomTextArray(),
