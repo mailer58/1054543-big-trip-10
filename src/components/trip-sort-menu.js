@@ -20,7 +20,7 @@ const createTripSortMenu = () => {
                      </svg>`);
     }
     tripSortMenuMarkUp.push(
-      `</label>
+        `</label>
      </div>`);
   }
 

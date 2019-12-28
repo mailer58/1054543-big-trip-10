@@ -1,7 +1,7 @@
 import {
   MONTHS_MAP
 } from './const.js';
-import { pointsOfRoute } from './components/forms.js';
+import {pointsOfRoute} from './components/forms.js';
 
 export {
   setCase,
@@ -106,10 +106,10 @@ const render = (container, component, place) => {
   }
 };
 
-const computeTotalPrice = (pointsOfRoute) => {
+const computeTotalPrice = (events) => {
   let totalPrice = 0;
   // compute total price:
-  for (const pointOfRoute of pointsOfRoute) {
+  for (const pointOfRoute of events) {
     totalPrice = totalPrice + pointOfRoute.price;
     if (pointOfRoute.offers.length !== 0) {
       for (const offer of pointOfRoute.offers) {
@@ -124,23 +124,23 @@ const computeTotalPrice = (pointsOfRoute) => {
 };
 
 // render information about trip in the header:
-const renderTripInfo = (pointsOfRoute) => {
+const renderTripInfo = (events) => {
   const routeTitle = document.querySelector(`.trip-info__title`);
   const datesTitle = document.querySelector(`.trip-info__dates`);
   // if there are points of route:
-  if (pointsOfRoute.length > 0) {
+  if (events.length > 0) {
     // get set of nonrecurrent towns:
     const nonrecurrentTowns = new Set();
-    for (const item of pointsOfRoute) {
+    for (const item of events) {
       nonrecurrentTowns.add(item.destination);
     }
     // get count of nonrecurrent towns:
     const nonReccurentTownsCount = nonrecurrentTowns.size;
 
-    const firstTown = pointsOfRoute[0].destination;
-    const startTime = pointsOfRoute[0].startTime;
-    const lastTown = pointsOfRoute[pointsOfRoute.length - 1].destination;
-    const endTime = pointsOfRoute[pointsOfRoute.length - 1].endTime;
+    const firstTown = events[0].destination;
+    const startTime = events[0].startTime;
+    const lastTown = events[events.length - 1].destination;
+    const endTime = events[events.length - 1].endTime;
 
 
     let route;

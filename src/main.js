@@ -3,16 +3,16 @@ import {
 } from './mock/point-of-route.js';
 
 import
-EventCardComponent
-from './components/cards-of-points-of-route.js';
+{renderEventCards}
+  from './components/cards-of-points-of-route.js';
 
 import
 SiteMenuComponent
-from './components/site-menu.js';
+  from './components/site-menu.js';
 
 import
 FilterComponent
-from './components/filter.js';
+  from './components/filter.js';
 
 import NewEventFormComponent, {
   toggleListenersOfEventListOptions,
@@ -21,12 +21,10 @@ import NewEventFormComponent, {
   onEscKeyDownCloseForm,
   onSaveBtnOfNewEventFormClick,
   onCloseEditFormBtnClick,
-  toggleEventListenersForRollUpBtns
 } from './components/forms.js';
 
 import {
   render,
-  createPromptText,
   removePromptText,
   RenderPosition,
   computeTotalPrice,
@@ -35,7 +33,7 @@ import {
 
 import
 TripSortMenuComponent
-from './components/trip-sort-menu.js';
+  from './components/trip-sort-menu.js';
 
 
 const numberOfPointsOfRoute = 5;
@@ -68,7 +66,7 @@ const onNewEventBtnClick = () => {
   newEventBtn.toggleAttribute(`disabled`);
   const eventResetButton = document.getElementsByClassName(`event__reset-btn`)[0];
   const eventSaveButton = document.getElementsByClassName(`event__save-btn`)[0];
-  eventSaveButton.classList.add('new-event');
+  eventSaveButton.classList.add(`new-event`);
   eventResetButton.addEventListener(`click`, removeNewEventForm);
   eventSaveButton.addEventListener(`click`, onSaveBtnOfNewEventFormClick);
   document.addEventListener(`keydown`, onEscKeyDownCloseForm);
@@ -95,12 +93,10 @@ render(tripEventsHeader, tripSortMenu.getElement(), RenderPosition.AFTER);
 pointsOfRoute = generatePointsOfRoute(numberOfPointsOfRoute);
 
 // show list of events:
-const tripSortMenuMarkUp = document.getElementsByClassName('trip-events__trip-sort')[0];
-const eventCards = new EventCardComponent(pointsOfRoute);
-render(tripSortMenuMarkUp, eventCards.getElement(pointsOfRoute), RenderPosition.AFTER);
+renderEventCards(pointsOfRoute);
 
 // add event listeners for roll-up buttons:
-toggleEventListenersForRollUpBtns(`addListeners`);
+// toggleEventListenersForRollUpBtns(`addListeners`);
 
 // compute and show total price:
 computeTotalPrice(pointsOfRoute);

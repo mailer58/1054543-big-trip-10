@@ -1,5 +1,4 @@
-import {
-} from './../mock/point-of-route.js';
+import {} from './../mock/point-of-route.js';
 
 import {
   MONTHS_MAP
@@ -8,12 +7,17 @@ import {
 import {
   adjustTimeFormat,
   setCase,
-  createElement
+  createElement,
+  render,
+  RenderPosition
 } from './../utils.js';
 
+import {
+  EditEventFormComponent
+} from './forms.js';
 
 export {
-  createEventCards
+  renderEventCards
 };
 
 /* ----------------------------------------------------------*/
@@ -56,51 +60,18 @@ const createMarkUpForPointOfRoute = (sameDatePointOfRoute) => {
     `;
 };
 
-const createMarkUpForDayNumber = (entry) => {
-  return `<li class="trip-days__item  day">
-   <div class="day__info">
-     <span class="day__counter">${entry[0]}</span>
-     <time class="day__date" datetime="${createDateTime(`yearMonthDay`, entry[1][0])}">
-     ${MONTHS_MAP.get(entry[1][0].startTime.getMonth())} 
-     ${entry[1][0].startTime.getDate()}
-     </time>
-   </div>
-   <ul class="trip-events__list">`;
-};
-
-const createEventCards = (pointsOfRoute) => {
-  const pointsOfRouteMap = createMapOfSetsOfSameDays(pointsOfRoute);
-  const pointsOfRouteMarkUp = [];
-  //  create mark-up for number of set of days:
-  pointsOfRouteMarkUp.push(`<ul class="trip-days">`);
-  for (const entry of pointsOfRouteMap) {
-    pointsOfRouteMarkUp.push(createMarkUpForDayNumber(entry));
-    // create points of route for the set of days:
-    for (const sameDatePointOfRoute of entry[1]) {
-      // create mark-up for point of route:
-      pointsOfRouteMarkUp.push(createMarkUpForPointOfRoute(sameDatePointOfRoute));
-    }
-    // create end of markUp for set of days:
-    pointsOfRouteMarkUp.push(`
-      </ul>
-      </li>
-      `);
-  }
-  return pointsOfRouteMarkUp.join(`\n`);
-};
-
-export default class EventCardComponent {
+class MarkUpForPointOfRouteComponent {
   constructor() {
     this._element = null;
   }
 
-  getTemplate(events) {
-    return createEventCards(events);
+  getTemplate(sameDatePoint) {
+    return createMarkUpForPointOfRoute(sameDatePoint);
   }
 
-  getElement(events) {
+  getElement(sameDatePoint) {
     if (!this._element) {
-      this._element = createElement(this.getTemplate(events));
+      this._element = createElement(this.getTemplate(sameDatePoint));
     }
 
     return this._element;
@@ -110,6 +81,77 @@ export default class EventCardComponent {
     this._element = null;
   }
 }
+
+const createMarkUpForDayNumber = (entry) => {
+  return `<li class="trip-days__item  day">
+   <div class="day__info">
+     <span class="day__counter">${entry[0]}</span>
+     <time class="day__date" datetime="${createDateTime(`yearMonthDay`, entry[1][0])}">
+     ${MONTHS_MAP.get(entry[1][0].startTime.getMonth())} 
+     ${entry[1][0].startTime.getDate()}
+     </time>
+   </div>`;
+};
+
+class MarkUpForDayNumberComponent {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate(entry) {
+    return createMarkUpForDayNumber(entry);
+  }
+
+  getElement(entry) {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate(entry));
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
+
+const renderEventCards = (pointsOfRoute) => {
+  const pointsOfRouteMap = createMapOfSetsOfSameDays(pointsOfRoute);
+  // add unordered list of days of trips:
+  const tripSortMenuMarkUp = document.getElementsByClassName(`trip-events__trip-sort`)[0];
+  const tripDayList = createElement(`<ul class="trip-days"></ul>`);
+  render(tripSortMenuMarkUp, tripDayList, RenderPosition.AFTER);
+
+  // add days of trip:
+  for (const entry of pointsOfRouteMap) {
+    const markUpForDayNumberComponent = new MarkUpForDayNumberComponent();
+    render(tripDayList, markUpForDayNumberComponent.getElement(entry), RenderPosition.APPEND);
+
+    const tripDayItem = markUpForDayNumberComponent.getElement(entry).querySelector(`.day__info`);
+    // create unordered list for events:
+    const eventsList = createElement(`<ul class="trip-events__list"></ul>`);
+    render(tripDayItem, eventsList, RenderPosition.AFTER);
+
+    // create points of route for the set of days:
+    for (const sameDatePointOfRoute of entry[1]) {
+      const markUpForPointOfRoute = new MarkUpForPointOfRouteComponent();
+      const rollUpBtn = markUpForPointOfRoute.getElement(sameDatePointOfRoute).querySelector(`.event__rollup-btn`);
+      rollUpBtn.addEventListener(`click`, () => {
+        eventsList.replaceChild(editEventForm.getElement(sameDatePointOfRoute), markUpForPointOfRoute.getElement(sameDatePointOfRoute));
+      });
+
+      const editEventForm = new EditEventFormComponent();
+      const saveBtn = editEventForm.getElement(sameDatePointOfRoute).querySelector(`.event__save-btn`);
+      saveBtn.addEventListener(`click`, (evt) => {
+        evt.preventDefault();
+        eventsList.replaceChild(markUpForPointOfRoute.getElement(sameDatePointOfRoute), editEventForm.getElement(sameDatePointOfRoute));
+      });
+      // create mark-up for point of route:
+      render(eventsList, markUpForPointOfRoute.getElement(sameDatePointOfRoute), RenderPosition.APPEND);
+    }
+  }
+};
 
 // create mark-up for offers in list of events:
 const createOffers = (offers) => {
@@ -177,7 +219,7 @@ const getEventDuration = (event) => {
   if (days) {
     return `${days}D ${hours}H ${minutes}M`;
   } else if (hours) {
-    return `${hours}D ${minutes}M`;
+    return `${hours}H ${minutes}M`;
   }
   return `${minutes}M`;
 };

@@ -11,14 +11,14 @@ import {
 } from './../utils.js';
 
 import
-EventCardComponent
-from './cards-of-points-of-route.js';
+{renderEventCards}
+  from './cards-of-points-of-route.js';
 import {
   DESTINATIONS
 } from './../mock/point-of-route.js';
 import
 TripSortMenuComponent
-from './trip-sort-menu.js';
+  from './trip-sort-menu.js';
 
 import {
   pointsOfRoute
@@ -39,7 +39,6 @@ export {
   onRollUpBtnClick,
   onCloseEditFormBtnClick,
   pointsOfRoute,
-  toggleEventListenersForRollUpBtns
 };
 
 const ESC_KEYCODE = 27;
@@ -63,7 +62,6 @@ const activity = [
 const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
 const pageBody = document.querySelector(`body`);
 const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
-const tripEventsSection = document.querySelector(`.trip-events`);
 let saveButtonOfEditForm = document.getElementsByClassName(`event__save-btn`)[0];
 
 let currentPointOfRoute; // opened point of route in edit menu
@@ -176,32 +174,31 @@ const generateMarkUpForListOfDestinations = () => {
   return listOfDestinationsMarkUp;
 };
 
-const createEditEventForm = (startTime, endTime, arrayOfEvents) => {
-  currentPointOfRoute = findPointOfRouteInArray(startTime, arrayOfEvents);
+const createEditEventForm = (event) => {
   // transform time from html to design format:
-  startTime = transformTimeBetweenHtmlAndDesigFormats(startTime, `T`, `/`, ` `);
-  endTime = transformTimeBetweenHtmlAndDesigFormats(endTime, `T`, `/`, ` `);
+  const startTime = event.startTime;
+  const endTime = event.endTime;
   let editFormMarkup = [];
   editFormMarkup.push(
-    `<form class="event  event--edit" action="#" method="post">
+      `<form class="event  event--edit" action="#" method="post">
            <header class="event__header">
              <div class="event__type-wrapper">
                <label class="event__type  event__type-btn" for="event-type-toggle-1">
                  <span class="visually-hidden">Choose event type</span>
-                 <img class="event__type-icon" width="17" height="17" src="img/icons/${currentPointOfRoute.eventIcon}.png" alt="Event type icon">
+                 <img class="event__type-icon" width="17" height="17" src="img/icons/${event.eventIcon}.png" alt="Event type icon">
                </label>
                <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">`);
   editFormMarkup.push(createEventsListMarkUp());
   editFormMarkup.push(
-    `</div>
+      `</div>
   
              <div class="event__field-group  event__field-group--destination">
-               <label class="event__label  event__type-output" for="event-destination-1">${currentPointOfRoute.eventType}</label>
-               <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${currentPointOfRoute.destination}" list="destination-list-1">
+               <label class="event__label  event__type-output" for="event-destination-1">${event.eventType}</label>
+               <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${event.destination}" list="destination-list-1">
                <datalist id="destination-list-1">`);
   editFormMarkup.push(generateMarkUpForListOfDestinations());
   editFormMarkup.push(
-    `</datalist>
+      `</datalist>
              </div>
   
              <div class="event__field-group  event__field-group--time">
@@ -221,7 +218,7 @@ const createEditEventForm = (startTime, endTime, arrayOfEvents) => {
                  <span class="visually-hidden">Price</span>
                  €
                </label>
-               <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${currentPointOfRoute.price}">
+               <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${event.price}">
              </div>
   
              <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -241,15 +238,15 @@ const createEditEventForm = (startTime, endTime, arrayOfEvents) => {
            </header>
   
            <section class="event__details">
-           ${generateOffersMarkUpInEditForm(currentPointOfRoute)}
+           ${generateOffersMarkUpInEditForm(event)}
              
              <section class="event__section  event__section--destination">
                <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-               <p class="event__destination-description">${currentPointOfRoute.description}</p>
+               <p class="event__destination-description">${event.description}</p>
   
                <div class="event__photos-container">
                  <div class="event__photos-tape">
-                   <img class="event__photo" src="${currentPointOfRoute.photo}" alt="Event photo">
+                   <img class="event__photo" src="${event.photo}" alt="Event photo">
                  </div>
                </div>
              </section>
@@ -260,18 +257,18 @@ const createEditEventForm = (startTime, endTime, arrayOfEvents) => {
   return editFormMarkup;
 };
 
-class EditEventForm {
+export class EditEventFormComponent {
   constructor() {
     this._element = null;
   }
 
-  getTemplate(startTime, endTime, arrayOfEvents) {
-    return createEditEventForm(startTime, endTime, arrayOfEvents);
+  getTemplate(event) {
+    return createEditEventForm(event);
   }
 
-  getElement(startTime, endTime, arrayOfEvents) {
+  getElement(event) {
     if (!this._element) {
-      this._element = createElement(this.getTemplate(startTime, endTime, arrayOfEvents));
+      this._element = createElement(this.getTemplate(event));
     }
 
     return this._element;
@@ -286,14 +283,14 @@ const generateOffersMarkUpInEditForm = (pointOfRoute) => {
   let offers = [];
   if (pointOfRoute.offers.length > 0) {
     offers.push(
-      `<section class="event__section  event__section--offers">
+        `<section class="event__section  event__section--offers">
   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
   <div class="event__available-offers">`);
     for (const offer of pointOfRoute.offers) {
       const isChecked = offer.isChecked ? `checked` : ``;
       offers.push(
-        `<div class="event__offer-selector">
+          `<div class="event__offer-selector">
       <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.name}-1" type="checkbox" name="event-offer-${offer.name}" ${isChecked}>
       <label class="event__offer-label" for="event-offer-${offer.name}-1">
         <span class="event__offer-title">${offer.type} ${offer.name}</span>
@@ -406,21 +403,25 @@ const onSaveBtnOfNewEventFormClick = (evt) => {
   redrawListOfEvents();
 };
 
-const onRollUpBtnClick = (evt) => {
+const onRollUpBtnClick = (eventsList, sameDatePointOfRoute, editEventFormComponent, markUpForPointOfRouteComponent) => {
+  eventsList.replaceChild(editEventFormComponent.getElement(sameDatePointOfRoute), markUpForPointOfRouteComponent.getElement(sameDatePointOfRoute));
+
+
   // close current form:
   onCloseEditFormBtnClick();
   // check if an roll-up button has openEditForm class:
+  /*
   if (evt.target.matches(`.openEditForm`)) {
     // show editEventForm:
     const eventDiv = evt.target.closest(`.event`);
     const startTime = eventDiv.querySelector(`.event__schedule > .event__time > .event__start-time`).getAttribute(`datetime`);
     const endTime = eventDiv.querySelector(`.event__schedule > .event__time > .event__end-time`).getAttribute(`datetime`);
-    const editEventForm = new EditEventForm();
+    const editEventForm = new EditEventFormComponent();
     render(eventDiv, editEventForm.getElement(startTime, endTime, pointsOfRoute), RenderPosition.AFTER);
     // disable roll-up button that had opened an edit form:
     evt.target.disabled = true;
     evt.target.classList.add(`disabledRollUpBtn`);
-  }
+  }*/
   // add eventListener for close edit form button:
   const editEventForm = document.getElementsByClassName(`event--edit`)[0];
   const closeEditFormBtn = editEventForm.getElementsByClassName(`event__rollup-btn`)[0];
@@ -512,26 +513,6 @@ const toggleListenersOfEventListOptions = (action) => {
   }
 };
 
-const toggleEventListenersForRollUpBtns = (action) => {
-  /*
-  const rollupBtnCollection = document.getElementsByClassName(`event__rollup-btn`);
-  // add eventListeners on roll-up buttons:
-  switch (action) {
-    case `addListeners`:
-      for (const i of rollupBtnCollection) {
-        i.classList.add(`openEditForm`);
-        i.addEventListener(`click`, onRollUpBtnClick);
-      }
-      break;
-    case `removeListeners`:
-      for (const i of rollupBtnCollection) {
-        i.removeEventListener(`click`, onRollUpBtnClick);
-      }
-      break;
-  }
-  */
-};
-
 const removeEventListenersOnEditFormClose = () => {
   const eventListBtn = document.getElementsByClassName(`event__type-btn`)[0];
   // remove eventListeners:
@@ -544,41 +525,11 @@ const removeEventListenersOnEditFormClose = () => {
 /* -------------------------------------------------------------*/
 // other functions:
 
-// find point of route in array:
-const findPointOfRouteInArray = (startTime, arrayOfEvents) => {
-  let pointOfRoute;
-  const eventStartTime = startTime;
-
-  // search for according record in array by date of event:
-  for (const entry of arrayOfEvents) {
-    const entryStartTimeYear = entry.startTime.getFullYear();
-    let entryStartTimeMonth = entry.startTime.getMonth();
-    entryStartTimeMonth = entryStartTimeMonth + 1;
-    entryStartTimeMonth = adjustTimeFormat(entryStartTimeMonth);
-    let entryStartTimeDay = entry.startTime.getDate();
-    entryStartTimeDay = adjustTimeFormat(entryStartTimeDay);
-    let entryStartTimeHours = entry.startTime.getHours();
-    entryStartTimeHours = adjustTimeFormat(entryStartTimeHours);
-    let entryStartTimeMinutes = entry.startTime.getMinutes();
-    entryStartTimeMinutes = adjustTimeFormat(entryStartTimeMinutes);
-
-    const entryStartTime = entryStartTimeYear + `-` + entryStartTimeMonth +
-      `-` + entryStartTimeDay + `T` + entryStartTimeHours +
-      `:` + entryStartTimeMinutes;
-
-    if (eventStartTime === entryStartTime) {
-      pointOfRoute = entry;
-    }
-  }
-  currentPointOfRoute = pointOfRoute;
-  return currentPointOfRoute;
-};
-
 // redraw list of events when save or delete button of edit form was clicked:
 const redrawListOfEvents = () => {
   let newEvent;
   // check type of form:
-  const newEventFormFormMarkUp = document.getElementsByClassName('trip-events__item  event  event--edit')[0];
+  const newEventFormFormMarkUp = document.getElementsByClassName(`trip-events__item  event  event--edit`)[0];
   if (newEventFormFormMarkUp) {
     removeNewEventForm();
     newEvent = true;
@@ -600,7 +551,7 @@ const redrawListOfEvents = () => {
   }
 
 
-  toggleEventListenersForRollUpBtns(`removeListeners`);
+  // toggleEventListenersForRollUpBtns(`removeListeners`);
 
   // redraw events:
   if (pointsOfRoute.length > 0 || newEvent) {
@@ -608,14 +559,11 @@ const redrawListOfEvents = () => {
     render(tripEventsHeader, tripSortMenu.getElement(), RenderPosition.AFTER);
 
     // render updated list of records:
-    const tripSortMenuMarkUp = document.getElementsByClassName('trip-events__trip-sort')[0];
-    console.log(pointsOfRoute.length);
-    const eventCards = new EventCardComponent(pointsOfRoute);
-    render(tripSortMenuMarkUp, eventCards.getElement(pointsOfRoute), RenderPosition.AFTER);
+    renderEventCards(pointsOfRoute);
 
 
     // add eventListeners for roll-up buttons:
-    toggleEventListenersForRollUpBtns(`addListeners`);
+    // toggleEventListenersForRollUpBtns(`addListeners`);
 
     // compute and show total price:
     computeTotalPrice(pointsOfRoute);
@@ -628,18 +576,18 @@ const redrawListOfEvents = () => {
 };
 
 const getDateFromInput = (time) => {
-  let dateArray = [];
+  const dateArray = [];
   // get numbers:
   for (let i = 0; i < time.length; i++) {
-    if (!isNaN(parseInt(time[i]))) {
+    if (!isNaN(parseInt(time[i], 10))) {
       let number = time[i];
 
       for (let j = i + 1; j <= time.length; j++) {
-        if (!isNaN(parseInt(time[j]))) {
+        if (!isNaN(parseInt(time[j], 10))) {
           number = number + time[j];
         } else {
           i = j;
-          dateArray.push(parseInt(number));
+          dateArray.push(parseInt(number, 10));
           break;
         }
       }
@@ -647,11 +595,11 @@ const getDateFromInput = (time) => {
   }
   dateArray[1] = dateArray[1] - 1; // get month for javascript
 
-  let year = dateArray[0];
-  let month = dateArray[1];
-  let day = dateArray[2];
-  let hours = dateArray[3];
-  let minutes = dateArray[4];
+  const year = dateArray[0];
+  const month = dateArray[1];
+  const day = dateArray[2];
+  const hours = dateArray[3];
+  const minutes = dateArray[4];
   time = new Date(year, month, day, hours, minutes);
   return time;
 };
@@ -678,30 +626,27 @@ const savePointOfRoute = (form) => {
   let eventIcon = editForm.getElementsByClassName(`event__type-icon`)[0].getAttribute(`src`);
   eventIcon = eventIcon.split(`/`);
   eventIcon = eventIcon[2];
-  eventIcon = eventIcon.split('.');
-  eventIcon = setCase(eventIcon[0], 'toUpperCase');
+  eventIcon = eventIcon.split(`.`);
+  eventIcon = setCase(eventIcon[0], `toUpperCase`);
   // save data into object:
-  if (form.className.includes('new-event')) { // for newEventform
+  if (form.className.includes(`new-event`)) { // for newEventform
 
     // create a new point of route
-    let newPointOfRoute = {
-      eventType: eventType,
-      destination: destination,
-      eventIcon: eventIcon,
-      startTime: startTime,
-      endTime: endTime,
-      price: price,
+    const newPointOfRoute = {
+      eventType,
+      destination,
+      eventIcon,
+      startTime,
+      endTime,
+      price,
       photo: `http://picsum.photos/300/150?r=\${getRandomInteger(1, 1000)}`,
       description: ``,
       offers: ``,
       days: ``
-    }
+    };
     // add the new point of route to array of points of route:
     pointsOfRoute.push(newPointOfRoute);
   } else { // for editForm
-
-    console.log(eventIcon);
-
     currentPointOfRoute.startTime = startTime;
     currentPointOfRoute.endTime = endTime;
     currentPointOfRoute.price = price;
@@ -714,14 +659,6 @@ const savePointOfRoute = (form) => {
     }
   }
 };
-
-const transformTimeBetweenHtmlAndDesigFormats = (time, splitter, substitute, combiner) => {
-  time = time.split(splitter);
-  time[0] = time[0].replace(/\D/g, substitute);
-  time = time.join(combiner);
-  return time;
-};
-
 
 
 // set event type:
@@ -742,7 +679,7 @@ const setEventTypeIcon = (evt) => {
     if (labelForAttr === eventTypeId) {
       // find an image for the event:
       let checkedEventImgSrc = window.getComputedStyle(
-        i, `:before`
+          i, `:before`
       ).getPropertyValue(`background-image`);
       // get source of image:
       const splitSymbol = `img/`;
