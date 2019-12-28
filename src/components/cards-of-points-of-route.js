@@ -217,11 +217,13 @@ const getEventDuration = (event) => {
   const minutes = Math.floor((diff - days * day - hours * hour) / minute);
 
   if (days) {
-    return `${days}D ${hours}H ${minutes}M`;
+
+    return `${adjustTimeFormat(days)}D ${adjustTimeFormat(hours)}H ${adjustTimeFormat(minutes)}M`;
   } else if (hours) {
-    return `${hours}H ${minutes}M`;
+
+    return `${adjustTimeFormat(hours)}H ${adjustTimeFormat(minutes)}M`;
   }
-  return `${minutes}M`;
+  return `${adjustTimeFormat(minutes)}M`;
 };
 
 
