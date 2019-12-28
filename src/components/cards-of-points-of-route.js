@@ -239,7 +239,7 @@ const getHoursMinutesForPointTime = (pointTime) => {
 // sort events by time:
 const sortPointsOfRouteByTime = (pointsOfRoute) => {
   pointsOfRoute.sort(function (a, b) {
-    return a.startTime - b.startTime;
+    return b.startTime - a.startTime;
   });
   return pointsOfRoute;
 };
