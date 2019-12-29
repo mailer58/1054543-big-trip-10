@@ -545,7 +545,7 @@ const getDateFromInput = (time) => {
 };
 
 
-const savePointOfRoute = (form) => {
+const savePointOfRoute = (form, events) => {
   const editForm = document.getElementsByClassName(`event--edit`)[0];
 
   // get data from mark-up:
@@ -585,7 +585,7 @@ const savePointOfRoute = (form) => {
       days: ``
     };
     // add the new point of route to array of points of route:
-    pointsOfRoute.push(newPointOfRoute);
+    events.push(newPointOfRoute);
   } else { // for editForm
     currentPointOfRoute.startTime = startTime;
     currentPointOfRoute.endTime = endTime;
