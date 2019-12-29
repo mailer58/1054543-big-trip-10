@@ -1,7 +1,6 @@
 import {
   MONTHS_MAP
 } from './const.js';
-import {pointsOfRoute} from './components/forms.js';
 
 export {
   setCase,
@@ -30,9 +29,9 @@ const setCase = (str, action) => {
 };
 
 // create the prompt:
-const createPromptText = () => {
+const createPromptText = (events) => {
   const promptText = document.getElementsByClassName(`prompt`)[0];
-  if (pointsOfRoute.length === 0 && !promptText) {
+  if (events.length === 0 && !promptText) {
     const prompt = document.createElement(`h2`);
     prompt.classList.add(`prompt`);
     prompt.textContent = `Click New Event to create your first point`;

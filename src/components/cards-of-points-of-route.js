@@ -48,9 +48,6 @@ const createMarkUpForPointOfRoute = (sameDatePointOfRoute) => {
     </p>
 
     <h4 class="visually-hidden">Offers:</h4>
-    <ul class="event__selected-offers">
-    ${createOffers(sameDatePointOfRoute.offers)}
-    </ul>
 
     <button class="event__rollup-btn" type="button">
       <span class="visually-hidden">Open event</span>
@@ -116,8 +113,8 @@ class MarkUpForDayNumberComponent {
 }
 
 
-const renderEventCards = (pointsOfRoute) => {
-  const pointsOfRouteMap = createMapOfSetsOfSameDays(pointsOfRoute);
+const renderEventCards = (events) => {
+  const pointsOfRouteMap = createMapOfSetsOfSameDays(events);
   // add unordered list of days of trips:
   const tripSortMenuMarkUp = document.getElementsByClassName(`trip-events__trip-sort`)[0];
   const tripDayList = createElement(`<ul class="trip-days"></ul>`);
@@ -147,15 +144,23 @@ const renderEventCards = (pointsOfRoute) => {
         evt.preventDefault();
         eventsList.replaceChild(markUpForPointOfRoute.getElement(sameDatePointOfRoute), editEventForm.getElement(sameDatePointOfRoute));
       });
-      // create mark-up for point of route:
+
+      // render a point of route:
       render(eventsList, markUpForPointOfRoute.getElement(sameDatePointOfRoute), RenderPosition.APPEND);
+
+      // render offers:
+      const offersHeader = markUpForPointOfRoute.getElement().querySelector(`.event > h4`);
+      const offersComponent = new OffersComponent();
+      const offersMarkUp = offersComponent.getElement(sameDatePointOfRoute.offers);
+      render(offersHeader, offersMarkUp, RenderPosition.AFTER);
     }
   }
 };
 
 // create mark-up for offers in list of events:
-const createOffers = (offers) => {
+const createOffersMarkUp = (offers) => {
   const offersMarkUp = [];
+  offersMarkUp.push(`<ul class="event__selected-offers">`);
   for (const offer of offers) {
     if (offer.isChecked) {
       offersMarkUp.push(
@@ -167,8 +172,31 @@ const createOffers = (offers) => {
       );
     }
   }
+  offersMarkUp.push(`</ul>`);
   return offersMarkUp.join(`\n`);
 };
+
+class OffersComponent {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate(offers) {
+    return createOffersMarkUp(offers);
+  }
+
+  getElement(offers) {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate(offers));
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
 
 /* ---------------------------------------------------------------*/
 // time:
@@ -237,45 +265,45 @@ const getHoursMinutesForPointTime = (pointTime) => {
 };
 
 // sort events by time:
-const sortPointsOfRouteByTime = (pointsOfRoute) => {
-  pointsOfRoute.sort(function (a, b) {
+const sortPointsOfRouteByTime = (events) => {
+  events.sort(function (a, b) {
     return b.startTime - a.startTime;
   });
-  return pointsOfRoute;
+  return events;
 };
 
-const createDaysCounters = (pointsOfRoute) => {
-  pointsOfRoute = sortPointsOfRouteByTime(pointsOfRoute);
+const createDaysCounters = (events) => {
+  events = sortPointsOfRouteByTime(events);
   let numberOfDaySet = 1;
-  for (let i = 0; i < pointsOfRoute.length; i++) {
+  for (let i = 0; i < events.length; i++) {
     if (i === 0) {
       // set first collection of days:
-      pointsOfRoute[i].days = 1;
+      events[i].days = 1;
     }
     if (i > 0) {
-      if (pointsOfRoute[i].startTime.getDate() === pointsOfRoute[i - 1].startTime.getDate()) {
-        pointsOfRoute[i].days = numberOfDaySet;
+      if (events[i].startTime.getDate() === events[i - 1].startTime.getDate()) {
+        events[i].days = numberOfDaySet;
       } else {
         numberOfDaySet++;
-        pointsOfRoute[i].days = numberOfDaySet;
+        events[i].days = numberOfDaySet;
       }
     }
   }
   // pick quantity of sets of days
   const quantityOfSetsOfDays = numberOfDaySet;
-  return [pointsOfRoute, quantityOfSetsOfDays];
+  return [events, quantityOfSetsOfDays];
 };
 
-const createMapOfSetsOfSameDays = (pointsOfRoute) => {
-  const returnedArray = createDaysCounters(pointsOfRoute);
-  pointsOfRoute = returnedArray[0];
+const createMapOfSetsOfSameDays = (events) => {
+  const returnedArray = createDaysCounters(events);
+  events = returnedArray[0];
   const quantityOfSetsOfDays = returnedArray[1];
   const setsOfSameDaysMap = new Map();
   for (let j = 1; j <= quantityOfSetsOfDays; j++) {
     const setsOfSameDays = [];
-    for (let i = 0; i < pointsOfRoute.length; i++) {
-      if (j === pointsOfRoute[i].days) {
-        setsOfSameDays.push(pointsOfRoute[i]);
+    for (let i = 0; i < events.length; i++) {
+      if (j === events[i].days) {
+        setsOfSameDays.push(events[i]);
       }
       setsOfSameDaysMap.set(j, setsOfSameDays);
     }

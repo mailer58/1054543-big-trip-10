@@ -36,7 +36,6 @@ export {
   onEscKeyDownCloseEventsList,
   onSaveBtnOfNewEventFormClick,
   createEditEventForm,
-  onRollUpBtnClick,
   onCloseEditFormBtnClick,
   pointsOfRoute,
 };
@@ -62,7 +61,7 @@ const activity = [
 const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
 const pageBody = document.querySelector(`body`);
 const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
-let saveButtonOfEditForm = document.getElementsByClassName(`event__save-btn`)[0];
+const saveButtonOfEditForm = document.getElementsByClassName(`event__save-btn`)[0];
 
 let currentPointOfRoute; // opened point of route in edit menu
 
@@ -379,7 +378,7 @@ const onPageBodyClickToCloseEventList = (evt) => {
 const onEscKeyDownCloseForm = (evt) => {
   if (evt.keyCode === ESC_KEYCODE) {
     onCloseEditFormBtnClick();
-    createPromptText();
+    createPromptText(pointsOfRoute);
   }
 };
 
@@ -401,44 +400,6 @@ const onSaveBtnOfNewEventFormClick = (evt) => {
   savePointOfRoute(evt.target);
   // redraw  list of events:
   redrawListOfEvents();
-};
-
-const onRollUpBtnClick = (eventsList, sameDatePointOfRoute, editEventFormComponent, markUpForPointOfRouteComponent) => {
-  eventsList.replaceChild(editEventFormComponent.getElement(sameDatePointOfRoute), markUpForPointOfRouteComponent.getElement(sameDatePointOfRoute));
-
-
-  // close current form:
-  onCloseEditFormBtnClick();
-  // check if an roll-up button has openEditForm class:
-  /*
-  if (evt.target.matches(`.openEditForm`)) {
-    // show editEventForm:
-    const eventDiv = evt.target.closest(`.event`);
-    const startTime = eventDiv.querySelector(`.event__schedule > .event__time > .event__start-time`).getAttribute(`datetime`);
-    const endTime = eventDiv.querySelector(`.event__schedule > .event__time > .event__end-time`).getAttribute(`datetime`);
-    const editEventForm = new EditEventFormComponent();
-    render(eventDiv, editEventForm.getElement(startTime, endTime, pointsOfRoute), RenderPosition.AFTER);
-    // disable roll-up button that had opened an edit form:
-    evt.target.disabled = true;
-    evt.target.classList.add(`disabledRollUpBtn`);
-  }*/
-  // add eventListener for close edit form button:
-  const editEventForm = document.getElementsByClassName(`event--edit`)[0];
-  const closeEditFormBtn = editEventForm.getElementsByClassName(`event__rollup-btn`)[0];
-  closeEditFormBtn.addEventListener(`click`, onCloseEditFormBtnClick);
-  // add eventListener for save button:
-  saveButtonOfEditForm = document.getElementsByClassName(`event__save-btn`)[0];
-  saveButtonOfEditForm.addEventListener(`click`, onSaveButtonOfEditFormClick);
-  // add eventListener for delete button:
-  const eventDeleteBtn = document.getElementsByClassName(`event__reset-btn`)[0];
-  eventDeleteBtn.addEventListener(`click`, onDeleteBtnClick);
-  // add eventListener for event list button:
-  const eventListBtn = document.getElementsByClassName(`event__type-btn`)[0];
-  eventListBtn.addEventListener(`click`, onEventListBtnClick);
-  // add eventListeners for options of event list:
-  toggleListenersOfEventListOptions(`addListeners`);
-  // add eventListener for Esc button:
-  document.addEventListener(`keydown`, onEscKeyDownCloseForm);
 };
 
 const onCloseEditFormBtnClick = () => {
@@ -475,27 +436,6 @@ const onSaveButtonOfEditFormClick = (evt) => {
   redrawListOfEvents();
 };
 
-const onDeleteBtnClick = (evt) => {
-  evt.preventDefault();
-  // find and remove a point of route:
-  for (let i = 0; i < pointsOfRoute.length; i++) {
-    if (currentPointOfRoute.startTime === pointsOfRoute[i].startTime) {
-      pointsOfRoute.splice([i], 1);
-    }
-  }
-  // redraw list of events:
-  redrawListOfEvents();
-
-  // compute and show total price:
-  computeTotalPrice(pointsOfRoute);
-
-  // render information about trip in the header:
-  renderTripInfo(pointsOfRoute);
-
-  // if there are no events add the prompt:
-  createPromptText();
-};
-
 /* ------------------------------------------------------------*/
 // functions for listeners of events:
 
@@ -526,7 +466,7 @@ const removeEventListenersOnEditFormClose = () => {
 // other functions:
 
 // redraw list of events when save or delete button of edit form was clicked:
-const redrawListOfEvents = () => {
+const redrawListOfEvents = (events) => {
   let newEvent;
   // check type of form:
   const newEventFormFormMarkUp = document.getElementsByClassName(`trip-events__item  event  event--edit`)[0];
@@ -554,25 +494,25 @@ const redrawListOfEvents = () => {
   // toggleEventListenersForRollUpBtns(`removeListeners`);
 
   // redraw events:
-  if (pointsOfRoute.length > 0 || newEvent) {
+  if (events.length > 0 || newEvent) {
     const tripSortMenu = new TripSortMenuComponent();
     render(tripEventsHeader, tripSortMenu.getElement(), RenderPosition.AFTER);
 
     // render updated list of records:
-    renderEventCards(pointsOfRoute);
+    renderEventCards(events);
 
 
     // add eventListeners for roll-up buttons:
     // toggleEventListenersForRollUpBtns(`addListeners`);
 
     // compute and show total price:
-    computeTotalPrice(pointsOfRoute);
+    computeTotalPrice(events);
 
     // render information about trip in the header:
-    renderTripInfo(pointsOfRoute);
+    renderTripInfo(events);
   }
   // if there are no events add the prompt:
-  createPromptText();
+  createPromptText(pointsOfRoute);
 };
 
 const getDateFromInput = (time) => {
@@ -660,7 +600,6 @@ const savePointOfRoute = (form) => {
   }
 };
 
-
 // set event type:
 const setEventTypeText = (evt) => {
   // set an text for an event:
@@ -705,5 +644,5 @@ const removeNewEventForm = () => {
   eventSaveButton.removeEventListener(`click`, onSaveBtnOfNewEventFormClick);
   tripEventsForm.remove();
   newEventBtn.disabled = false;
-  createPromptText();
+  createPromptText(pointsOfRoute);
 };

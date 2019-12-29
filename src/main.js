@@ -43,8 +43,6 @@ const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-chi
 const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
 const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
 
-let pointsOfRoute; // array of points of route
-
 export {
   pointsOfRoute
 };
@@ -90,7 +88,7 @@ const tripSortMenu = new TripSortMenuComponent();
 render(tripEventsHeader, tripSortMenu.getElement(), RenderPosition.AFTER);
 
 // generate an array of points of route:
-pointsOfRoute = generatePointsOfRoute(numberOfPointsOfRoute);
+const pointsOfRoute = generatePointsOfRoute(numberOfPointsOfRoute);
 
 // show list of events:
 renderEventCards(pointsOfRoute);
