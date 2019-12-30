@@ -12,7 +12,8 @@ export {
   RenderPosition,
   createElement,
   computeTotalPrice,
-  renderTripInfo
+  renderTripInfo,
+  sortPointsOfRouteByTime
 };
 
 const setCase = (str, action) => {
@@ -81,7 +82,8 @@ const adjustTimeFormat = (eventTime) => {
 const RenderPosition = {
   AFTERBEGIN: `afterbegin`,
   BEFOREEND: `beforeend`,
-  AFTER: `after`
+  AFTER: `after`,
+  APPEND: `append`
 };
 
 const createElement = (template) => {
@@ -124,6 +126,7 @@ const computeTotalPrice = (events) => {
 
 // render information about trip in the header:
 const renderTripInfo = (events) => {
+  events = sortPointsOfRouteByTime(events);
   const routeTitle = document.querySelector(`.trip-info__title`);
   const datesTitle = document.querySelector(`.trip-info__dates`);
   // if there are points of route:
@@ -180,4 +183,12 @@ const renderTripInfo = (events) => {
     datesTitle.textContent = ``;
 
   }
+};
+
+// sort events by time:
+const sortPointsOfRouteByTime = (events) => {
+  events.sort(function (a, b) {
+    return a.startTime - b.startTime;
+  });
+  return events;
 };

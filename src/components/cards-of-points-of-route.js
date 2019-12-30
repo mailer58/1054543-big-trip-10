@@ -9,7 +9,8 @@ import {
   setCase,
   createElement,
   render,
-  RenderPosition
+  RenderPosition,
+  sortPointsOfRouteByTime
 } from './../utils.js';
 
 import {
@@ -117,13 +118,13 @@ const renderEventCards = (events) => {
   const pointsOfRouteMap = createMapOfSetsOfSameDays(events);
   // add unordered list of days of trips:
   const tripSortMenuMarkUp = document.getElementsByClassName(`trip-events__trip-sort`)[0];
-  const tripDayList = createElement(`<ul class="trip-days"></ul>`);
-  render(tripSortMenuMarkUp, tripDayList, RenderPosition.AFTER);
+  const tripDaysList = createElement(`<ul class="trip-days"></ul>`);
+  render(tripSortMenuMarkUp, tripDaysList, RenderPosition.AFTER);
 
   // add days of trip:
   for (const entry of pointsOfRouteMap) {
     const markUpForDayNumberComponent = new MarkUpForDayNumberComponent();
-    render(tripDayList, markUpForDayNumberComponent.getElement(entry), RenderPosition.APPEND);
+    render(tripDaysList, markUpForDayNumberComponent.getElement(entry), RenderPosition.APPEND);
 
     const tripDayItem = markUpForDayNumberComponent.getElement(entry).querySelector(`.day__info`);
     // create unordered list for events:
@@ -155,6 +156,7 @@ const renderEventCards = (events) => {
       render(offersHeader, offersMarkUp, RenderPosition.AFTER);
     }
   }
+
 };
 
 // create mark-up for offers in list of events:
@@ -264,14 +266,6 @@ const getHoursMinutesForPointTime = (pointTime) => {
   return [hours, minutes];
 };
 
-// sort events by time:
-const sortPointsOfRouteByTime = (events) => {
-  events.sort(function (a, b) {
-    return b.startTime - a.startTime;
-  });
-  return events;
-};
-
 const createDaysCounters = (events) => {
   events = sortPointsOfRouteByTime(events);
   let numberOfDaySet = 1;
@@ -295,9 +289,7 @@ const createDaysCounters = (events) => {
 };
 
 const createMapOfSetsOfSameDays = (events) => {
-  const returnedArray = createDaysCounters(events);
-  events = returnedArray[0];
-  const quantityOfSetsOfDays = returnedArray[1];
+  const quantityOfSetsOfDays = createDaysCounters(events)[1];
   const setsOfSameDaysMap = new Map();
   for (let j = 1; j <= quantityOfSetsOfDays; j++) {
     const setsOfSameDays = [];

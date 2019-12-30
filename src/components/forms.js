@@ -397,9 +397,9 @@ const onEscKeyDownCloseEventsList = (evt) => {
 const onSaveBtnOfNewEventFormClick = (evt) => {
   evt.preventDefault();
   // save data:
-  savePointOfRoute(evt.target);
+  savePointOfRoute(evt.target, pointsOfRoute);
   // redraw  list of events:
-  redrawListOfEvents();
+  redrawListOfEvents(pointsOfRoute);
 };
 
 const onCloseEditFormBtnClick = () => {
@@ -431,9 +431,9 @@ const onCloseEditFormBtnClick = () => {
 const onSaveButtonOfEditFormClick = (evt) => {
   evt.preventDefault();
   // save data:
-  savePointOfRoute(evt.target);
+  savePointOfRoute(evt.target, pointsOfRoute);
   // redraw  list of events:
-  redrawListOfEvents();
+  redrawListOfEvents(pointsOfRoute);
 };
 
 /* ------------------------------------------------------------*/
