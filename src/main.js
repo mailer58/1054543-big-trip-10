@@ -100,3 +100,4 @@ renderEventCards(pointsOfRoute);
 computeTotalPrice(pointsOfRoute);
 
 renderTripInfo(pointsOfRoute);
+

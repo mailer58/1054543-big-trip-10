@@ -156,7 +156,6 @@ const renderEventCards = (events) => {
       render(offersHeader, offersMarkUp, RenderPosition.AFTER);
     }
   }
-
 };
 
 // create mark-up for offers in list of events:
@@ -275,7 +274,9 @@ const createDaysCounters = (events) => {
       events[i].days = 1;
     }
     if (i > 0) {
-      if (events[i].startTime.getDate() === events[i - 1].startTime.getDate()) {
+      if (events[i].startTime.getFullYear() === events[i - 1].startTime.getFullYear() &&
+        events[i].startTime.getMonth() === events[i - 1].startTime.getMonth() &&
+        events[i].startTime.getDate() === events[i - 1].startTime.getDate()) {
         events[i].days = numberOfDaySet;
       } else {
         numberOfDaySet++;
