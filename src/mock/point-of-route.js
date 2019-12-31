@@ -1,6 +1,6 @@
 import {
   transformEventTypeText
-} from './../components/utils.js';
+} from './../utils.js';
 
 export {
   generatePointsOfRoute,
