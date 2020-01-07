@@ -3,6 +3,10 @@ import {
 } from './mock/point-of-route.js';
 
 import
+NoEventsComponent
+  from './components/no-points.js';
+
+import
 {renderEventCards}
   from './components/cards-of-points-of-route.js';
 
@@ -83,15 +87,21 @@ render(filterControlsHeader, filter.getElement(), RenderPosition.AFTER);
 
 newEventBtn.addEventListener(`click`, onNewEventBtnClick);
 
-// show sorting menu:
-const tripSortMenu = new TripSortMenuComponent();
-render(tripEventsHeader, tripSortMenu.getElement(), RenderPosition.AFTER);
 
 // generate an array of points of route:
 const pointsOfRoute = generatePointsOfRoute(numberOfPointsOfRoute);
+const tripSortMenu = new TripSortMenuComponent();
 
-// show list of events:
-renderEventCards(pointsOfRoute);
+if (pointsOfRoute.length > 0) {
+  // show sorting menu:
+  render(tripEventsHeader, tripSortMenu.getElement(), RenderPosition.AFTER);
+
+  // show list of events:
+  renderEventCards(pointsOfRoute);
+} else {
+  const noEvents = new NoEventsComponent();
+  render(tripEventsHeader, noEvents.getElement(), RenderPosition.AFTER);
+}
 
 // add event listeners for roll-up buttons:
 // toggleEventListenersForRollUpBtns(`addListeners`);
@@ -99,5 +109,7 @@ renderEventCards(pointsOfRoute);
 // compute and show total price:
 computeTotalPrice(pointsOfRoute);
 
+
 renderTripInfo(pointsOfRoute);
+
 

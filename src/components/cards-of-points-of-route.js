@@ -21,6 +21,10 @@ export {
   renderEventCards
 };
 
+let prevMarkUpForPointOfRoute;
+let prevEditEventForm;
+let prevEventsList;
+
 /* ----------------------------------------------------------*/
 // mark-up:
 
@@ -115,6 +119,7 @@ class MarkUpForDayNumberComponent {
 
 
 const renderEventCards = (events) => {
+
   const pointsOfRouteMap = createMapOfSetsOfSameDays(events);
   // add unordered list of days of trips:
   const tripSortMenuMarkUp = document.getElementsByClassName(`trip-events__trip-sort`)[0];
@@ -135,15 +140,46 @@ const renderEventCards = (events) => {
     for (const sameDatePointOfRoute of entry[1]) {
       const markUpForPointOfRoute = new MarkUpForPointOfRouteComponent();
       const rollUpBtn = markUpForPointOfRoute.getElement(sameDatePointOfRoute).querySelector(`.event__rollup-btn`);
-      rollUpBtn.addEventListener(`click`, () => {
+
+      const replaceCardToEdit = () => {
         eventsList.replaceChild(editEventForm.getElement(sameDatePointOfRoute), markUpForPointOfRoute.getElement(sameDatePointOfRoute));
+      };
+      const replaceEditToCard = () => {
+        eventsList.replaceChild(markUpForPointOfRoute.getElement(sameDatePointOfRoute), editEventForm.getElement(sameDatePointOfRoute));
+      };
+      const onEscKeyDown = (evt) => {
+        const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
+        const editForm = document.getElementsByClassName(`event  event--edit`)[0];
+        if (isEscKey && editForm) {
+          replaceEditToCard();
+          document.removeEventListener(`keydown`, onEscKeyDown);
+        }
+      };
+      // add eventListeners:
+
+
+      rollUpBtn.addEventListener(`click`, () => {
+        const editForm = document.getElementsByClassName(`event  event--edit`)[0];
+        if (editForm) {
+          // remove opened editForm:
+          // document.removeEventListener(`keydown`, onEscKeyDown);
+          prevEventsList.replaceChild(prevMarkUpForPointOfRoute, prevEditEventForm);
+
+        }
+        replaceCardToEdit();
+        document.addEventListener(`keydown`, onEscKeyDown);
+        // save previous edit form and point of route:
+        prevMarkUpForPointOfRoute = markUpForPointOfRoute.getElement(sameDatePointOfRoute);
+        prevEditEventForm = editEventForm.getElement(sameDatePointOfRoute);
+        prevEventsList = eventsList;
       });
 
       const editEventForm = new EditEventFormComponent();
       const saveBtn = editEventForm.getElement(sameDatePointOfRoute).querySelector(`.event__save-btn`);
+
       saveBtn.addEventListener(`click`, (evt) => {
         evt.preventDefault();
-        eventsList.replaceChild(markUpForPointOfRoute.getElement(sameDatePointOfRoute), editEventForm.getElement(sameDatePointOfRoute));
+        replaceEditToCard();
       });
 
       // render a point of route:
