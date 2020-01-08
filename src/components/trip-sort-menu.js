@@ -1,6 +1,5 @@
-import {
-  createElement
-} from './../utils.js';
+import AbstractComponent from './abstact-component';
+
 
 const tripSortItems = [`event`, `time`, `price`];
 
@@ -31,24 +30,12 @@ const createTripSortMenu = () => {
   return tripSortMenuMarkUp;
 };
 
-export default class TripSortMenuComponent {
+export default class TripSortMenuComponent extends AbstractComponent {
   constructor() {
-    this._element = null;
+    super();
   }
 
   getTemplate() {
     return createTripSortMenu();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

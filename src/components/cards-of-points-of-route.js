@@ -1,4 +1,5 @@
 import {} from './../mock/point-of-route.js';
+import AbstractComponent from './abstact-component.js';
 
 import {
   MONTHS_MAP
@@ -7,11 +8,14 @@ import {
 import {
   adjustTimeFormat,
   setCase,
+  sortPointsOfRouteByTime
+} from './../utils/common.js';
+
+import {
   createElement,
   render,
   RenderPosition,
-  sortPointsOfRouteByTime
-} from './../utils.js';
+} from './../utils/render.js';
 
 import {
   EditEventFormComponent
@@ -58,25 +62,18 @@ const createMarkUpForPointOfRoute = (sameDatePointOfRoute) => {
     `;
 };
 
-class MarkUpForPointOfRouteComponent {
-  constructor() {
-    this._element = null;
+class MarkUpForPointOfRouteComponent extends AbstractComponent {
+  constructor(sameDatePoint) {
+    super();
+    this._point = sameDatePoint;
   }
 
-  getTemplate(sameDatePoint) {
-    return createMarkUpForPointOfRoute(sameDatePoint);
+  getTemplate() {
+    return createMarkUpForPointOfRoute(this._point);
   }
 
-  getElement(sameDatePoint) {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate(sameDatePoint));
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  setRollUpBtnHandler(handler) {
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, handler);
   }
 }
 
@@ -91,68 +88,79 @@ const createMarkUpForDayNumber = (entry) => {
    </div>`;
 };
 
-class MarkUpForDayNumberComponent {
-  constructor() {
-    this._element = null;
+class MarkUpForDayNumberComponent extends AbstractComponent {
+  constructor(day) {
+    super();
+    this._day = day;
   }
 
-  getTemplate(entry) {
-    return createMarkUpForDayNumber(entry);
-  }
-
-  getElement(entry) {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate(entry));
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  getTemplate() {
+    return createMarkUpForDayNumber(this._day);
   }
 }
 
 
-const renderEventCards = (events) => {
+const renderEventCards = (events, container) => {
+
   const pointsOfRouteMap = createMapOfSetsOfSameDays(events);
   // add unordered list of days of trips:
   const tripSortMenuMarkUp = document.getElementsByClassName(`trip-events__trip-sort`)[0];
-  const tripDaysList = createElement(`<ul class="trip-days"></ul>`);
-  render(tripSortMenuMarkUp, tripDaysList, RenderPosition.AFTER);
+
+  // add list trip:
+  render(tripSortMenuMarkUp, container.getElement(), RenderPosition.AFTER);
 
   // add days of trip:
   for (const entry of pointsOfRouteMap) {
-    const markUpForDayNumberComponent = new MarkUpForDayNumberComponent();
-    render(tripDaysList, markUpForDayNumberComponent.getElement(entry), RenderPosition.APPEND);
+    const markUpForDayNumberComponent = new MarkUpForDayNumberComponent(entry);
+    render(container.getElement(), markUpForDayNumberComponent.getElement(), RenderPosition.APPEND);
 
-    const tripDayItem = markUpForDayNumberComponent.getElement(entry).querySelector(`.day__info`);
+    const tripDayItem = markUpForDayNumberComponent.getElement().querySelector(`.day__info`);
     // create unordered list for events:
     const eventsList = createElement(`<ul class="trip-events__list"></ul>`);
     render(tripDayItem, eventsList, RenderPosition.AFTER);
 
     // create points of route for the set of days:
     for (const sameDatePointOfRoute of entry[1]) {
-      const markUpForPointOfRoute = new MarkUpForPointOfRouteComponent();
-      const rollUpBtn = markUpForPointOfRoute.getElement(sameDatePointOfRoute).querySelector(`.event__rollup-btn`);
-      rollUpBtn.addEventListener(`click`, () => {
-        eventsList.replaceChild(editEventForm.getElement(sameDatePointOfRoute), markUpForPointOfRoute.getElement(sameDatePointOfRoute));
-      });
+      const markUpForPointOfRoute = new MarkUpForPointOfRouteComponent(sameDatePointOfRoute);
 
-      const editEventForm = new EditEventFormComponent();
-      const saveBtn = editEventForm.getElement(sameDatePointOfRoute).querySelector(`.event__save-btn`);
-      saveBtn.addEventListener(`click`, (evt) => {
-        evt.preventDefault();
+      const replaceCardToEdit = () => {
+        eventsList.replaceChild(editEventForm.getElement(sameDatePointOfRoute), markUpForPointOfRoute.getElement(sameDatePointOfRoute));
+      };
+      const replaceEditToCard = () => {
         eventsList.replaceChild(markUpForPointOfRoute.getElement(sameDatePointOfRoute), editEventForm.getElement(sameDatePointOfRoute));
-      });
+      };
+      const onEscKeyDown = (evt) => {
+        const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
+        const editForm = document.getElementsByClassName(`event  event--edit`)[0];
+        if (isEscKey && editForm) {
+          replaceEditToCard();
+          document.removeEventListener(`keydown`, onEscKeyDown);
+        }
+      };
+
+      // add eventListeners:
+      const onRollUpBtnClick = () => {
+        replaceCardToEdit();
+        document.addEventListener(`keydown`, onEscKeyDown);
+      };
+
+      markUpForPointOfRoute.setRollUpBtnHandler(onRollUpBtnClick);
+
+      const editEventForm = new EditEventFormComponent(sameDatePointOfRoute);
+      const onSaveBtnClick = (evt) => {
+        evt.preventDefault();
+        replaceEditToCard();
+      };
+
+      editEventForm.setSubmitBtnHandler(onSaveBtnClick);
 
       // render a point of route:
       render(eventsList, markUpForPointOfRoute.getElement(sameDatePointOfRoute), RenderPosition.APPEND);
 
       // render offers:
       const offersHeader = markUpForPointOfRoute.getElement().querySelector(`.event > h4`);
-      const offersComponent = new OffersComponent();
-      const offersMarkUp = offersComponent.getElement(sameDatePointOfRoute.offers);
+      const offersComponent = new OffersComponent(sameDatePointOfRoute.offers);
+      const offersMarkUp = offersComponent.getElement();
       render(offersHeader, offersMarkUp, RenderPosition.AFTER);
     }
   }
@@ -177,25 +185,14 @@ const createOffersMarkUp = (offers) => {
   return offersMarkUp.join(`\n`);
 };
 
-class OffersComponent {
-  constructor() {
-    this._element = null;
+class OffersComponent extends AbstractComponent {
+  constructor(offers) {
+    super();
+    this._offers = offers;
   }
 
-  getTemplate(offers) {
-    return createOffersMarkUp(offers);
-  }
-
-  getElement(offers) {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate(offers));
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  getTemplate() {
+    return createOffersMarkUp(this._offers);
   }
 }
 
