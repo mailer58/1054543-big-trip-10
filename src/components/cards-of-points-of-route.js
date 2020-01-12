@@ -1,5 +1,6 @@
 import {} from './../mock/point-of-route.js';
-import AbstractComponent from './abstact-component.js';
+import AbstractComponent from './abstract-component.js';
+import PointController from './../controllers/point-controller.js';
 
 import {
   MONTHS_MAP
@@ -16,10 +17,6 @@ import {
   render,
   RenderPosition,
 } from './../utils/render.js';
-
-import {
-  EditEventFormComponent
-} from './forms.js';
 
 export {
   renderEventCards
@@ -62,7 +59,7 @@ const createMarkUpForPointOfRoute = (sameDatePointOfRoute) => {
     `;
 };
 
-class MarkUpForPointOfRouteComponent extends AbstractComponent {
+export class MarkUpForPointOfRouteComponent extends AbstractComponent {
   constructor(sameDatePoint) {
     super();
     this._point = sameDatePoint;
@@ -99,9 +96,8 @@ class MarkUpForDayNumberComponent extends AbstractComponent {
   }
 }
 
-
-const renderEventCards = (events, container) => {
-
+const renderEventCards = (events, container, onDataChange, onViewChange) => {
+  const showedControllers = [];
   const pointsOfRouteMap = createMapOfSetsOfSameDays(events);
   // add unordered list of days of trips:
   const tripSortMenuMarkUp = document.getElementsByClassName(`trip-events__trip-sort`)[0];
@@ -121,49 +117,12 @@ const renderEventCards = (events, container) => {
 
     // create points of route for the set of days:
     for (const sameDatePointOfRoute of entry[1]) {
-      const markUpForPointOfRoute = new MarkUpForPointOfRouteComponent(sameDatePointOfRoute);
-
-      const replaceCardToEdit = () => {
-        eventsList.replaceChild(editEventForm.getElement(sameDatePointOfRoute), markUpForPointOfRoute.getElement(sameDatePointOfRoute));
-      };
-      const replaceEditToCard = () => {
-        eventsList.replaceChild(markUpForPointOfRoute.getElement(sameDatePointOfRoute), editEventForm.getElement(sameDatePointOfRoute));
-      };
-      const onEscKeyDown = (evt) => {
-        const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
-        const editForm = document.getElementsByClassName(`event  event--edit`)[0];
-        if (isEscKey && editForm) {
-          replaceEditToCard();
-          document.removeEventListener(`keydown`, onEscKeyDown);
-        }
-      };
-
-      // add eventListeners:
-      const onRollUpBtnClick = () => {
-        replaceCardToEdit();
-        document.addEventListener(`keydown`, onEscKeyDown);
-      };
-
-      markUpForPointOfRoute.setRollUpBtnHandler(onRollUpBtnClick);
-
-      const editEventForm = new EditEventFormComponent(sameDatePointOfRoute);
-      const onSaveBtnClick = (evt) => {
-        evt.preventDefault();
-        replaceEditToCard();
-      };
-
-      editEventForm.setSubmitBtnHandler(onSaveBtnClick);
-
-      // render a point of route:
-      render(eventsList, markUpForPointOfRoute.getElement(sameDatePointOfRoute), RenderPosition.APPEND);
-
-      // render offers:
-      const offersHeader = markUpForPointOfRoute.getElement().querySelector(`.event > h4`);
-      const offersComponent = new OffersComponent(sameDatePointOfRoute.offers);
-      const offersMarkUp = offersComponent.getElement();
-      render(offersHeader, offersMarkUp, RenderPosition.AFTER);
+      const pointController = new PointController(eventsList, onDataChange, onViewChange);
+      pointController.render(sameDatePointOfRoute);
+      showedControllers.push(pointController);
     }
   }
+  return showedControllers;
 };
 
 // create mark-up for offers in list of events:
@@ -185,7 +144,7 @@ const createOffersMarkUp = (offers) => {
   return offersMarkUp.join(`\n`);
 };
 
-class OffersComponent extends AbstractComponent {
+export class OffersComponent extends AbstractComponent {
   constructor(offers) {
     super();
     this._offers = offers;

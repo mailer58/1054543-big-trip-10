@@ -24,11 +24,19 @@ TripSortMenuComponent
 export default class TripController {
   constructor(container) {
     this._container = container;
+
+    this._events = [];
+    this._showedPointControllers = [];
+
     this._tripSortMenuComponent = new TripSortMenuComponent();
     this._noEventsComponent = new NoEventsComponent();
+
+    this._onDataChange = this._onDataChange.bind(this);
+    this._onViewChange = this._onViewChange.bind(this);
   }
 
   render(events) {
+    this._events = events;
     const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
 
     if (events.length > 0) {
@@ -37,9 +45,14 @@ export default class TripController {
       render(tripEventsHeader, this._tripSortMenuComponent.getElement(), RenderPosition.AFTER);
 
       // show list of events:
-      renderEventCards(events, this._container);
+      const newPoints = renderEventCards(events, this._container, this._onDataChange, this._onViewChange);
 
-    } else {
+      // save array of pointControllers:
+      this._showedPointControllers = this._showedPointControllers.concat(newPoints);
+
+    } else { // show prompt:
+      this._events = [];
+      this._showedPointControllers = [];
       render(tripEventsHeader, this._noEventsComponent.getElement(), RenderPosition.AFTER);
     }
 
@@ -48,4 +61,21 @@ export default class TripController {
 
     renderTripInfo(events);
   }
+
+  _onViewChange() {
+    this._showedPointControllers.forEach((item) => item.setDefaultView());
+  }
+
+
+  _onDataChange(pointController, oldData, newData) {
+    const index = this._events.findIndex((it) => it === oldData);
+
+    if (index === -1) {
+      return;
+    }
+
+    this._events = [].concat(this._events.slice(0, index), newData, this._events.slice(index + 1));
+
+  }
+
 }

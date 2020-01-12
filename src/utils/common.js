@@ -4,8 +4,6 @@ import {
 
 export {
   setCase,
-  createPromptText,
-  removePromptText,
   transformEventTypeText,
   adjustTimeFormat,
   computeTotalPrice,
@@ -24,26 +22,6 @@ const setCase = (str, action) => {
     outputString = str[0].toLowerCase() + str.slice(1);
   }
   return outputString;
-};
-
-// create the prompt:
-const createPromptText = (events) => {
-  const promptText = document.getElementsByClassName(`prompt`)[0];
-  if (events.length === 0 && !promptText) {
-    const prompt = document.createElement(`h2`);
-    prompt.classList.add(`prompt`);
-    prompt.textContent = `Click New Event to create your first point`;
-    const tripEvents = document.querySelector(`.trip-events`);
-    tripEvents.append(prompt);
-  }
-};
-
-// remove the prompt:
-const removePromptText = () => {
-  const promptText = document.getElementsByClassName(`prompt`)[0];
-  if (promptText) {
-    promptText.remove();
-  }
 };
 
 // get event type:
@@ -161,3 +139,4 @@ const sortPointsOfRouteByTime = (events) => {
   });
   return events;
 };
+

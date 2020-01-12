@@ -79,7 +79,6 @@ newEventBtn.addEventListener(`click`, onNewEventBtnClick);
 
 // generate an array of points of route:
 const pointsOfRoute = generatePointsOfRoute(numberOfPointsOfRoute);
-
 // render events:
 const tripDaysListComponent = new TripDaysListComponent();
 const tripController = new TripController(tripDaysListComponent);
