@@ -10,8 +10,7 @@ import {
   from './../components/cards-of-points-of-route.js';
 
 import
-FormsCommonListeners, {
-} from './../utils/forms-common-listeners.js';
+FormsCommonListeners, {} from './../utils/forms-common-listeners.js';
 
 import {
   replace,
@@ -69,7 +68,7 @@ export default class PointController extends FormsCommonListeners {
 
     this._editPointComponent.setFavoriteBtnClickHandler(() => {
 
-      this._editPointComponent._favorite = this._onDataChange(this, event, Object.assign({}, event, {
+      this._onDataChange(this, event, Object.assign({}, event, {
         favorite: !event.favorite,
       }));
 
