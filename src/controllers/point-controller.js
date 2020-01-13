@@ -68,7 +68,7 @@ export default class PointController extends FormsCommonListeners {
 
     this._editPointComponent.setFavoriteBtnClickHandler(() => {
 
-      this._onDataChange(this, event, Object.assign({}, event, {
+      this._editPointComponent._favorite = this._onDataChange(this, event, Object.assign({}, event, {
         favorite: !event.favorite,
       }));
 

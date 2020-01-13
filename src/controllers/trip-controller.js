@@ -75,6 +75,7 @@ export default class TripController {
     }
 
     this._events = [].concat(this._events.slice(0, index), newData, this._events.slice(index + 1));
+    return this._events[index].favorite;
   }
 
 }
