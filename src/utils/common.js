@@ -1,16 +1,13 @@
 import {
   MONTHS_MAP
-} from './const.js';
+} from './../const.js';
 
 export {
   setCase,
-  render,
   createPromptText,
   removePromptText,
   transformEventTypeText,
   adjustTimeFormat,
-  RenderPosition,
-  createElement,
   computeTotalPrice,
   renderTripInfo,
   sortPointsOfRouteByTime
@@ -78,34 +75,6 @@ const adjustTimeFormat = (eventTime) => {
   return time;
 };
 
-// render:
-const RenderPosition = {
-  AFTERBEGIN: `afterbegin`,
-  BEFOREEND: `beforeend`,
-  AFTER: `after`,
-  APPEND: `append`
-};
-
-const createElement = (template) => {
-  const newElement = document.createElement(`div`);
-  newElement.innerHTML = template;
-
-  return newElement.firstChild;
-};
-
-const render = (container, component, place) => {
-  switch (place) {
-    case RenderPosition.PREPEND:
-      container.prepend(component);
-      break;
-    case RenderPosition.APPEND:
-      container.append(component);
-      break;
-    case RenderPosition.AFTER:
-      container.after(component);
-      break;
-  }
-};
 
 const computeTotalPrice = (events) => {
   let totalPrice = 0;

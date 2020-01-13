@@ -1,14 +1,19 @@
 import {
-  render,
   createPromptText,
   transformEventTypeText,
   adjustTimeFormat,
   setCase,
-  createElement,
-  RenderPosition,
   computeTotalPrice,
   renderTripInfo
-} from './../utils.js';
+} from './../utils/common.js';
+
+import {
+  render,
+  createElement,
+  RenderPosition,
+} from './../utils/render.js';
+
+import AbstractComponent from './abstact-component';
 
 import
 {renderEventCards}
@@ -256,25 +261,18 @@ const createEditEventForm = (event) => {
   return editFormMarkup;
 };
 
-export class EditEventFormComponent {
-  constructor() {
-    this._element = null;
+export class EditEventFormComponent extends AbstractComponent {
+  constructor(event) {
+    super();
+    this._event = event;
   }
 
-  getTemplate(event) {
-    return createEditEventForm(event);
+  getTemplate() {
+    return createEditEventForm(this._event);
   }
 
-  getElement(event) {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate(event));
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  setSubmitBtnHandler(handler) {
+    this.getElement().querySelector(`.event__save-btn`).addEventListener(`click`, handler);
   }
 }
 

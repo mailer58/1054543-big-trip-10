@@ -1,4 +1,4 @@
-import {createElement} from './../utils.js';
+import AbstractComponent from './abstact-component';
 
 const filterTypes = [`everything`, `future`, `past`];
 
@@ -17,25 +17,13 @@ const createFilterTemplate = () => {
   return filtersMarkUp;
 };
 
-export default class FilterComponent {
+export default class FilterComponent extends AbstractComponent {
   constructor() {
-    this._element = null;
+    super();
   }
 
   getTemplate() {
     return createFilterTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
 

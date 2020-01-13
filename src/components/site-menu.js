@@ -1,4 +1,4 @@
-import {createElement} from './../utils.js';
+import AbstractComponent from './abstact-component';
 
 const itemsOfSiteMenu = [`Table`, `Stats`];
 
@@ -14,25 +14,13 @@ const createSiteMenuTemplate = () => {
   return siteMenuMarkUp;
 };
 
-export default class SiteMenuComponent {
+export default class SiteMenuComponent extends AbstractComponent {
   constructor() {
-    this._element = null;
+    super();
   }
 
   getTemplate() {
     return createSiteMenuTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
 

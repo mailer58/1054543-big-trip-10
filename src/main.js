@@ -2,9 +2,10 @@ import {
   generatePointsOfRoute,
 } from './mock/point-of-route.js';
 
-import
-{renderEventCards}
-  from './components/cards-of-points-of-route.js';
+import TripDaysListComponent from './components/trip-days-list.js';
+
+import TripController from './controllers/trip-controller.js';
+
 
 import
 SiteMenuComponent
@@ -25,15 +26,8 @@ import NewEventFormComponent, {
 
 import {
   render,
-  removePromptText,
   RenderPosition,
-  computeTotalPrice,
-  renderTripInfo
-} from './utils.js';
-
-import
-TripSortMenuComponent
-  from './components/trip-sort-menu.js';
+} from './utils/render.js';
 
 
 const numberOfPointsOfRoute = 5;
@@ -50,7 +44,6 @@ export {
 // handler:
 const onNewEventBtnClick = () => {
   onCloseEditFormBtnClick();
-  removePromptText();
   const tripSortMenu = document.getElementsByClassName(`trip-sort`)[0];
   // render newEventForm:
   const newEventForm = new NewEventFormComponent();
@@ -75,7 +68,7 @@ const onNewEventBtnClick = () => {
   eventTypeTextForm.textContent = `Flight to`;
 };
 
-// render components:
+// render menu and filters:
 const siteMenu = new SiteMenuComponent();
 render(tripControlsHeader, siteMenu.getElement(), RenderPosition.AFTER);
 const filter = new FilterComponent();
@@ -83,21 +76,13 @@ render(filterControlsHeader, filter.getElement(), RenderPosition.AFTER);
 
 newEventBtn.addEventListener(`click`, onNewEventBtnClick);
 
-// show sorting menu:
-const tripSortMenu = new TripSortMenuComponent();
-render(tripEventsHeader, tripSortMenu.getElement(), RenderPosition.AFTER);
 
 // generate an array of points of route:
 const pointsOfRoute = generatePointsOfRoute(numberOfPointsOfRoute);
 
-// show list of events:
-renderEventCards(pointsOfRoute);
+// render events:
+const tripDaysListComponent = new TripDaysListComponent();
+const tripController = new TripController(tripDaysListComponent);
+tripController.render(pointsOfRoute);
 
-// add event listeners for roll-up buttons:
-// toggleEventListenersForRollUpBtns(`addListeners`);
-
-// compute and show total price:
-computeTotalPrice(pointsOfRoute);
-
-renderTripInfo(pointsOfRoute);
 
