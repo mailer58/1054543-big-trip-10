@@ -1,14 +1,8 @@
 import {
   transformEventTypeText,
-  adjustTimeFormat,
   setCase,
 } from './../utils/common.js';
 
-import {
-  createElement,
-} from './../utils/render.js';
-
-import AbstractComponent from './abstract-component.js';
 import AbstractSmartComponent from './abstract-smart-component.js';
 
 import {
@@ -55,79 +49,6 @@ const generateMarkUpForListOfDestinations = () => {
   return listOfDestinationsMarkUp;
 };
 
-
-export class ListOfDestinationsComponent extends AbstractComponent {
-  constructor() {
-    super();
-  }
-
-  getTemplate() {
-
-    return generateMarkUpForListOfDestinations();
-  }
-}
-
-const createNewEventForm = () => {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = adjustTimeFormat(date.getMonth() + 1);
-  const day = adjustTimeFormat(date.getDate());
-  const hours = adjustTimeFormat(date.getHours());
-  const minutes = adjustTimeFormat(date.getMinutes());
-
-  let newEventFormMarkUp = [];
-
-  newEventFormMarkUp.push(`<form class="trip-events__item  event  event--edit" action="#" method="post">
-       <header class="event__header">
-         <div class="event__type-wrapper">
-           <label class="event__type  event__type-btn" for="event-type-toggle-1">
-             <span class="visually-hidden">Choose event type</span>
-             <img class="event__type-icon" width="17" height="17" src="img/icons/flight.png" alt="Event type icon">
-           </label>
-           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">`);
-  // generate event list:
-  newEventFormMarkUp.push(createEventsListMarkUp());
-
-  newEventFormMarkUp.push(`<div class="event__field-group  event__field-group--destination">
-  <label class="event__label  event__type-output" for="event-destination-1">
-  Sightseeing at
-  </label>
-  <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="" list="destination-list-1">
-  <datalist id="destination-list-1">`);
-
-  // generate list of destinations:
-  newEventFormMarkUp.push(generateMarkUpForListOfDestinations());
-
-  newEventFormMarkUp.push(`</datalist>
-         </div>
-  
-         <div class="event__field-group  event__field-group--time">
-           <label class="visually-hidden" for="event-start-time-1">
-             From
-           </label>
-           <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${year}/${month}/${day} ${hours}:${minutes}">
-           —
-           <label class="visually-hidden" for="event-end-time-1">
-             To
-           </label>
-           <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${year}/${month}/${day} ${hours}:${minutes}">
-         </div>
-  
-         <div class="event__field-group  event__field-group--price">
-           <label class="event__label" for="event-price-1">
-             <span class="visually-hidden">Price</span>
-             €
-           </label>
-           <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="">
-         </div>
-  
-         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-         <button class="event__reset-btn" type="reset">Cancel</button>
-       </header>
-     </form>`);
-  newEventFormMarkUp = newEventFormMarkUp.join(`\n`);
-  return newEventFormMarkUp;
-};
 
 const createEventsListMarkUp = () => {
   let eventsListMarkUp = [];
@@ -190,7 +111,7 @@ const createEditEventFormMarkUp = (event, options = {}) => {
              <div class="event__type-wrapper">
                <label class="event__type  event__type-btn" for="event-type-toggle-1">
                  <span class="visually-hidden">Choose event type</span>
-                 <img class="event__type-icon" width="17" height="17" src="img/icons/${formIcon || event.eventIcon}.png" alt="Event type icon">
+                 <img class="event__type-icon" width="17" height="17" src="img/icons/${setCase(formIcon || event.eventIcon, `toLowerCase`)}.png" alt="Event type icon">
                </label>
                <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">`);
   editFormMarkup.push(createEventsListMarkUp());
@@ -303,7 +224,7 @@ export class EditEventFormComponent extends AbstractSmartComponent {
   }
 
   setFavoriteBtnClickHandler(handler) {
-    this.getElement().querySelector(`.event__favorite-icon`).addEventListener(`click`, handler);
+    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, handler);
     this._favoriteHandler = handler;
   }
 
@@ -317,7 +238,7 @@ export class EditEventFormComponent extends AbstractSmartComponent {
     this.setSubmitBtnHandler(this._setSubmitBtnHandler);
     this._subscribeOnEvents();
     this.setEventListBtnClickHandler(this._setEventListBtnClickHandler);
-    this.setFavoriteBtnClickHandler(this._setFavoriteBtnClickHandler);
+    this.setFavoriteBtnClickHandler(this._favoriteHandler);
   }
 
   _subscribeOnEvents() {
@@ -376,27 +297,7 @@ const generateOffersMarkUpInEditForm = (eventOffers, newOffers) => {
 };
 /* --------------------------------------------*/
 // classes:
-export default class NewEventForm {
-  constructor() {
-    this._element = null;
-  }
 
-  getTemplate() {
-    return createNewEventForm();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
-  }
-}
 
 /* -------------------------------------------------------------*/
 // other functions:
@@ -426,3 +327,4 @@ export const getEventTypeIcon = (evt) => {
   }
   return checkedEventImgSrc;
 };
+

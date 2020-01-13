@@ -238,8 +238,7 @@ const generatePointOfRoute = () => {
     endTime.setHours(startTime.getHours() + getRandomInteger(1, 3));
   }
 
-  let randomPhoto = getRandomInteger(1, 1000);
-  randomPhoto = `http://picsum.photos/300/150?r=\${randomPhoto}`;
+  const randomPhoto = `http://picsum.photos/300/150?r=\${randomPhoto}`;
 
   return {
     eventType: transformEventTypeText(eventType),

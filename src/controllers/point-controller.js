@@ -34,11 +34,11 @@ export default class PointController extends FormsCommonListeners {
     this._pointComponent = null;
     this._editPointComponent = null;
 
-    this._onEscKeyDownCloseForm = this._onEscKeyDownCloseForm.bind(this);
+    this._onEscKeyDownCloseEditForm = this._onEscKeyDownCloseEditForm.bind(this);
     this._onDataChange = onDataChange;
     this._onViewChange = onViewChange;
-    this.onPageBodyClickToCloseEventList = this.onPageBodyClickToCloseEventList.bind(this);
-    this._onEventListOptionClick = this.onEventListOptionClick.bind(this);
+    this._onPageBodyClickToCloseEventList = this._onPageBodyClickToCloseEventList.bind(this);
+    this._onEscKeyDownCloseEventsList = this._onEscKeyDownCloseEventsList.bind(this);
   }
 
   render(event) {
@@ -58,7 +58,7 @@ export default class PointController extends FormsCommonListeners {
     // add listeners:
     this._pointComponent.setRollUpBtnHandler(() => {
       this._replaceCardToEdit();
-      document.addEventListener(`keydown`, this._onEscKeyDownCloseForm);
+      document.addEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
     });
 
     this._editPointComponent.setSubmitBtnHandler((evt) => {
@@ -80,10 +80,10 @@ export default class PointController extends FormsCommonListeners {
       const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
       eventTypeToggle.checked = !eventTypeToggle.checked;
       eventTypeList.style.display = eventTypeToggle.checked ? `block` : `none`;
-      document.removeEventListener(`keydown`, this._onEscKeyDownCloseForm);
-      pageBody.addEventListener(`click`, this.onPageBodyClickToCloseEventList);
+      document.removeEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
+      pageBody.addEventListener(`click`, this._onPageBodyClickToCloseEventList);
+      document.addEventListener(`keydown`, this._onEscKeyDownCloseEventsList);
     });
-
   }
 
   _replaceCardToEdit() {
@@ -104,7 +104,7 @@ export default class PointController extends FormsCommonListeners {
     }
   }
 
-  _onEscKeyDownCloseForm(evt) {
+  _onEscKeyDownCloseEditForm(evt) {
     const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
     const editForm = document.getElementsByClassName(`event  event--edit`)[0];
     if (isEscKey && editForm) {
@@ -121,7 +121,7 @@ export default class PointController extends FormsCommonListeners {
       this._editPointComponent.removeElement();
       this._editPointComponent._subscribeOnEvents();
 
-      document.removeEventListener(`keydown`, this._onEscKeyDownCloseForm);
+      document.removeEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
     }
   }
 
