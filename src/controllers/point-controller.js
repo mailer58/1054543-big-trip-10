@@ -1,13 +1,13 @@
 import {
   EditEventFormComponent,
 }
-from './../components/forms.js';
+  from './../components/forms.js';
 
 import {
   MarkUpForPointOfRouteComponent,
   OffersComponent
 }
-from './../components/cards-of-points-of-route.js';
+  from './../components/cards-of-points-of-route.js';
 
 import
 FormsCommonListeners, {} from './../utils/forms-common-listeners.js';
@@ -77,8 +77,6 @@ export default class PointController extends FormsCommonListeners {
       });
       // update event in edit form:
       this._editPointComponent._event = event;
-      console.log(event.favorite);
-
     });
 
     this._editPointComponent.setEventListBtnClickHandler((evt) => {
@@ -113,7 +111,7 @@ export default class PointController extends FormsCommonListeners {
 
   _onEscKeyDownCloseEditForm(evt) {
     const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
-    const editForm = this._editPointComponent.getElement().querySelector('.event__header');
+    const editForm = this._editPointComponent.getElement().querySelector(`.event__header`);
     if (isEscKey && editForm) {
       // reset edit form:
       this._editPointComponent._destination = null;

@@ -36,7 +36,7 @@ export default class FormsCommonListeners {
       }
 
       document.removeEventListener(`keydown`, this._onEscKeyDownCloseEventsList);
-      pageBody.removeEventListener(`click`, this.__onPageBodyClickToCloseEventList);
+      pageBody.removeEventListener(`click`, this._onPageBodyClickToCloseEventList);
       document.addEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
     }
   }

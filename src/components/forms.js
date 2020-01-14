@@ -91,7 +91,6 @@ const createEditEventFormMarkUp = (event, options = {}) => {
     formOffers,
     formPrice,
     formIcon,
-    formFavorite,
     formEventType
   } = options;
   // transform time from html to design format:

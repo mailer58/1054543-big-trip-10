@@ -1,11 +1,11 @@
 import
 NoEventsComponent
-from './../components/no-points.js';
+  from './../components/no-points.js';
 
 import {
   renderEventCards
 }
-from './../components/cards-of-points-of-route.js';
+  from './../components/cards-of-points-of-route.js';
 
 import {
   computeTotalPrice,
@@ -19,7 +19,7 @@ import {
 
 import
 TripSortMenuComponent
-from './../components/trip-sort-menu.js';
+  from './../components/trip-sort-menu.js';
 
 export default class TripController {
   constructor(container, pointsModel) {
@@ -67,9 +67,7 @@ export default class TripController {
   }
 
 
-  _onDataChange(tripController, oldData, newData) {
-    const isSuccess = this._pointsModel.updatePoint(oldData.id, newData);
-
+  _onDataChange() {
   }
 
 

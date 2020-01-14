@@ -10,11 +10,11 @@ import Points from './models/points.js';
 
 import
 SiteMenuComponent
-from './components/site-menu.js';
+  from './components/site-menu.js';
 
 import
 FilterComponent
-from './components/filter.js';
+  from './components/filter.js';
 
 import {
   render,

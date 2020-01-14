@@ -262,7 +262,6 @@ const generatePointsOfRoute = (count) => {
     points.push(generatePointOfRoute());
     points[i].id = i + 1;
   }
-  console.log(points);
   return points;
 };
 
