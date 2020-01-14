@@ -1,4 +1,3 @@
-import {} from './../mock/point-of-route.js';
 import AbstractComponent from './abstract-component.js';
 import PointController from './../controllers/point-controller.js';
 

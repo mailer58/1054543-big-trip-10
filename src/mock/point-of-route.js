@@ -241,6 +241,7 @@ const generatePointOfRoute = () => {
   const randomPhoto = `http://picsum.photos/300/150?r=\${randomPhoto}`;
 
   return {
+    id: null,
     eventType: transformEventTypeText(eventType),
     destination,
     eventIcon: eventType,
@@ -256,9 +257,13 @@ const generatePointOfRoute = () => {
 };
 
 const generatePointsOfRoute = (count) => {
-  return new Array(count)
-    .fill(``)
-    .map(generatePointOfRoute);
+  const points = [];
+  for (let i = 0; i < count; i++) {
+    points.push(generatePointOfRoute());
+    points[i].id = i + 1;
+  }
+  console.log(points);
+  return points;
 };
 
 const getRandomInteger = (min, max) => {

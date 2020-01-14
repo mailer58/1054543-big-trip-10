@@ -26,15 +26,16 @@ export default class FormsCommonListeners {
     const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
     const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
     if (!evt.target.matches(`.event__type-label`) &&
-    !evt.target.matches(`.event__type-btn`) &&
-    !evt.target.matches(`.event__type-icon`) &&
-    !evt.target.matches(`.event__type-input`)) {
+      !evt.target.matches(`.event__type-btn`) &&
+      !evt.target.matches(`.event__type-icon`) &&
+      !evt.target.matches(`.event__type-input`)) {
 
       if (eventTypeToggle && eventTypeList) {
         eventTypeToggle.checked = !eventTypeToggle.checked;
         eventTypeList.style.display = `none`;
       }
 
+      document.removeEventListener(`keydown`, this._onEscKeyDownCloseEventsList);
       pageBody.removeEventListener(`click`, this.__onPageBodyClickToCloseEventList);
       document.addEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
     }

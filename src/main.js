@@ -6,14 +6,15 @@ import TripDaysListComponent from './components/trip-days-list.js';
 
 import TripController from './controllers/trip-controller.js';
 
+import Points from './models/points.js';
 
 import
 SiteMenuComponent
-  from './components/site-menu.js';
+from './components/site-menu.js';
 
 import
 FilterComponent
-  from './components/filter.js';
+from './components/filter.js';
 
 import {
   render,
@@ -38,9 +39,10 @@ render(filterControlsHeader, filter.getElement(), RenderPosition.AFTER);
 
 // generate an array of points of route:
 const pointsOfRoute = generatePointsOfRoute(numberOfPointsOfRoute);
+const pointsModel = new Points();
+pointsModel.setPoints(pointsOfRoute);
+
 // render events:
 const tripDaysListComponent = new TripDaysListComponent();
-const tripController = new TripController(tripDaysListComponent);
-tripController.render(pointsOfRoute);
-
-
+const tripController = new TripController(tripDaysListComponent, pointsModel);
+tripController.render();

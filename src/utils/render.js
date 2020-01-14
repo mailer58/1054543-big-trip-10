@@ -15,9 +15,6 @@ export const createElement = (template) => {
 
 export const render = (container, component, place) => {
   switch (place) {
-    case RenderPosition.PREPEND:
-      container.prepend(component);
-      break;
     case RenderPosition.APPEND:
       container.append(component);
       break;

@@ -1,11 +1,11 @@
 import
 NoEventsComponent
-  from './../components/no-points.js';
+from './../components/no-points.js';
 
 import {
   renderEventCards
 }
-  from './../components/cards-of-points-of-route.js';
+from './../components/cards-of-points-of-route.js';
 
 import {
   computeTotalPrice,
@@ -19,13 +19,14 @@ import {
 
 import
 TripSortMenuComponent
-  from './../components/trip-sort-menu.js';
+from './../components/trip-sort-menu.js';
 
 export default class TripController {
-  constructor(container) {
+  constructor(container, pointsModel) {
     this._container = container;
 
-    this._events = [];
+    this._pointsModel = pointsModel;
+
     this._showedPointControllers = [];
 
     this._tripSortMenuComponent = new TripSortMenuComponent();
@@ -35,31 +36,30 @@ export default class TripController {
     this._onViewChange = this._onViewChange.bind(this);
   }
 
-  render(events) {
-    this._events = events;
+  render() {
     const tripEventsHeader = document.querySelector(`.trip-events > h2:nth-child(1)`);
 
-    if (events.length > 0) {
+    if (this._pointsModel.getPointsAll().length > 0) {
 
       // show sorting menu:
       render(tripEventsHeader, this._tripSortMenuComponent.getElement(), RenderPosition.AFTER);
 
       // show list of events:
-      const newPoints = renderEventCards(events, this._container, this._onDataChange, this._onViewChange);
+      const newPoints = renderEventCards(this._pointsModel.getPointsAll(), this._container, this._onDataChange, this._onViewChange);
 
       // save array of pointControllers:
       this._showedPointControllers = this._showedPointControllers.concat(newPoints);
 
     } else { // show prompt:
-      this._events = [];
+      this._pointsModel.setPoints([]);
       this._showedPointControllers = [];
       render(tripEventsHeader, this._noEventsComponent.getElement(), RenderPosition.AFTER);
     }
 
     // compute and show total price:
-    computeTotalPrice(events);
+    computeTotalPrice(this._pointsModel.getPointsAll());
 
-    renderTripInfo(events);
+    renderTripInfo(this._pointsModel.getPointsAll());
   }
 
   _onViewChange() {
@@ -68,14 +68,9 @@ export default class TripController {
 
 
   _onDataChange(tripController, oldData, newData) {
-    const index = this._events.findIndex((it) => it === oldData);
+    const isSuccess = this._pointsModel.updatePoint(oldData.id, newData);
 
-    if (index === -1) {
-      return;
-    }
-
-    this._events = [].concat(this._events.slice(0, index), newData, this._events.slice(index + 1));
-    return this._events[index].favorite;
   }
+
 
 }

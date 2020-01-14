@@ -1,13 +1,13 @@
 import {
   EditEventFormComponent,
 }
-  from './../components/forms.js';
+from './../components/forms.js';
 
 import {
   MarkUpForPointOfRouteComponent,
   OffersComponent
 }
-  from './../components/cards-of-points-of-route.js';
+from './../components/cards-of-points-of-route.js';
 
 import
 FormsCommonListeners, {} from './../utils/forms-common-listeners.js';
@@ -37,8 +37,8 @@ export default class PointController extends FormsCommonListeners {
     this._onEscKeyDownCloseEditForm = this._onEscKeyDownCloseEditForm.bind(this);
     this._onDataChange = onDataChange;
     this._onViewChange = onViewChange;
-    this._onPageBodyClickToCloseEventList = this._onPageBodyClickToCloseEventList.bind(this);
-    this._onEscKeyDownCloseEventsList = this._onEscKeyDownCloseEventsList.bind(this);
+    this._onPageBodyClickToCloseEventList = super._onPageBodyClickToCloseEventList.bind(this);
+    this._onEscKeyDownCloseEventsList = super._onEscKeyDownCloseEventsList.bind(this);
   }
 
   render(event) {
@@ -67,10 +67,17 @@ export default class PointController extends FormsCommonListeners {
     });
 
     this._editPointComponent.setFavoriteBtnClickHandler(() => {
-
-      this._editPointComponent._favorite = this._onDataChange(this, event, Object.assign({}, event, {
+      // update array of model:
+      this._onDataChange(this, event, Object.assign({}, event, {
         favorite: !event.favorite,
       }));
+      // update event of pointController:
+      event = Object.assign({}, event, {
+        favorite: !event.favorite,
+      });
+      // update event in edit form:
+      this._editPointComponent._event = event;
+      console.log(event.favorite);
 
     });
 
@@ -106,7 +113,7 @@ export default class PointController extends FormsCommonListeners {
 
   _onEscKeyDownCloseEditForm(evt) {
     const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
-    const editForm = document.getElementsByClassName(`event  event--edit`)[0];
+    const editForm = this._editPointComponent.getElement().querySelector('.event__header');
     if (isEscKey && editForm) {
       // reset edit form:
       this._editPointComponent._destination = null;
@@ -116,12 +123,14 @@ export default class PointController extends FormsCommonListeners {
       this._editPointComponent._icon = null;
       this._editPointComponent._eventType = null;
 
+      // remove listeners:
+      document.removeEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
+      this._editPointComponent.getElement().querySelector(`.event__type-btn`).removeEventListener(`click`, this._setEventListBtnClickHandler);
 
       this._replaceEditToCard();
       this._editPointComponent.removeElement();
-      this._editPointComponent._subscribeOnEvents();
+      this._editPointComponent.recoveryListeners();
 
-      document.removeEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
     }
   }
 

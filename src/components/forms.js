@@ -96,7 +96,7 @@ const createEditEventFormMarkUp = (event, options = {}) => {
   } = options;
   // transform time from html to design format:
   let editFormMarkup = [];
-  let favorite = formFavorite || event.favorite;
+  let favorite = event.favorite;
   favorite = favorite ? `checked` : ``;
   let offers;
   if (event.offers.length === 0 && !formOffers || formOffers === `none`) {
