@@ -46,3 +46,5 @@ pointsModel.setPoints(pointsOfRoute);
 const tripDaysListComponent = new TripDaysListComponent();
 const tripController = new TripController(tripDaysListComponent, pointsModel);
 tripController.render();
+
+

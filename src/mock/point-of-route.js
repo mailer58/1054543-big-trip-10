@@ -221,9 +221,9 @@ const generatePointOfRoute = () => {
 
   // generate random date:
   const startTime = new Date(
-      2019,
-      getRandomInteger(10, 11),
-      getRandomInteger(1, 5),
+      2020,
+      getRandomInteger(0, 1),
+      getRandomInteger(1, 10),
       0,
       0
   );

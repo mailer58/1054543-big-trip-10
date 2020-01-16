@@ -16,7 +16,17 @@ import {
   replace,
   render,
   RenderPosition,
+  remove
 } from './../utils/render.js';
+
+import {
+  DataChange
+} from './../const.js';
+
+import {
+  setCase,
+  getDateFromInput,
+} from "./../utils/common.js";
 
 const Mode = {
   DEFAULT: `default`,
@@ -26,10 +36,11 @@ const Mode = {
 const pageBody = document.querySelector(`body`);
 
 export default class PointController extends FormsCommonListeners {
-  constructor(container, onDataChange, onViewChange) {
+  constructor(container, onDataChange, onViewChange, tripController) {
     super();
     this._container = container;
     this._mode = Mode.DEFAULT;
+    this._tripController = tripController;
 
     this._pointComponent = null;
     this._editPointComponent = null;
@@ -61,14 +72,44 @@ export default class PointController extends FormsCommonListeners {
       document.addEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
     });
 
+    // save changes in exisiting event:
     this._editPointComponent.setSubmitBtnHandler((evt) => {
       evt.preventDefault();
       this._replaceEditToCard();
+      const formData = this.getFormData();
+      const {
+        formStartTime,
+        formEndTime,
+        formPrice,
+        formDestination,
+        formEventType,
+        formIcon,
+        formDescription,
+        formOffers,
+        formFavorite
+      } = formData;
+
+      const newEvent = {
+        id: event.id,
+        eventType: formEventType,
+        destination: formDestination,
+        eventIcon: formIcon,
+        startTime: formStartTime,
+        endTime: formEndTime,
+        price: formPrice,
+        photo: event.photo,
+        description: formDescription,
+        offers: formOffers,
+        days: ``,
+        favorite: formFavorite,
+      };
+
+      this._onDataChange(DataChange.SAVE, event.id, Object.assign({}, newEvent));
     });
 
     this._editPointComponent.setFavoriteBtnClickHandler(() => {
-      // update array of model:
-      this._onDataChange(this, event, Object.assign({}, event, {
+      // update the array of model:
+      this._onDataChange(DataChange.FAVORITE, event.id, Object.assign({}, event, {
         favorite: !event.favorite,
       }));
       // update event of pointController:
@@ -91,6 +132,12 @@ export default class PointController extends FormsCommonListeners {
     });
   }
 
+  destroy() {
+    remove(this._editPointComponent);
+    remove(this._pointComponent);
+    document.removeEventListener(`keydown`, this._onEscKeyDown);
+  }
+
   _replaceCardToEdit() {
     this._onViewChange();
     replace(this._editPointComponent, this._pointComponent);
@@ -111,7 +158,7 @@ export default class PointController extends FormsCommonListeners {
 
   _onEscKeyDownCloseEditForm(evt) {
     const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
-    const editForm = this._editPointComponent.getElement().querySelector(`.event__header`);
+    const editForm = this._editPointComponent.getElement().querySelector(`section`);
     if (isEscKey && editForm) {
       // reset edit form:
       this._editPointComponent._destination = null;
@@ -130,6 +177,75 @@ export default class PointController extends FormsCommonListeners {
       this._editPointComponent.recoveryListeners();
 
     }
+  }
+
+  getFormData() {
+    const element = this._editPointComponent.getElement();
+    // const editForm = element.querySelector(`.event.event--edit`);
+
+    // get data from mark-up:
+    let startTime = element.querySelector(`#event-start-time-1`).value;
+    let endTime = element.querySelector(`#event-end-time-1`).value;
+
+    // get time in format of javascript:
+    startTime = getDateFromInput(startTime);
+    endTime = getDateFromInput(endTime);
+
+    const price = parseInt(element.querySelector(`#event-price-1`).value, 10);
+    const destination = element.querySelector(`#event-destination-1`).value;
+    const description = element.querySelector(`.event__destination-description`).textContent;
+    const favorite = element.querySelector(`#event-favorite-1`).checked;
+    const eventType = element.querySelector(`.event__label.event__type-output`).textContent;
+
+    const offersCollection = element.getElementsByClassName(`event__offer-selector`);
+    const offers = [];
+    let offerTitle;
+    let offerType;
+    let offerName;
+    let offerPrice;
+    let checked;
+    if (offersCollection) {
+      for (const offer of offersCollection) {
+        offerTitle = offer.querySelector(`.event__offer-title`).textContent;
+        offerType = offerTitle.split(`: `);
+        offerName = offerType[1];
+        offerType = offerType[0];
+
+        if (offerType.indexOf(` `)) {
+          offerType = offerTitle.split(` `);
+          offerType = offerType[0];
+        }
+        offerType = offerType === `Check` ? `Check-in` : offerType;
+
+        offerPrice = offer.querySelector(`.event__offer-price`).textContent;
+        checked = offer.getElementsByClassName(`event__offer-checkbox`)[0].checked;
+
+        offers.push({
+          type: offerType,
+          name: offerName,
+          price: offerPrice,
+          isChecked: checked,
+        });
+      }
+    }
+
+    let eventIcon = element.querySelector(`.event__type-icon`).getAttribute(`src`);
+    eventIcon = eventIcon.split(`/`);
+    eventIcon = eventIcon[2];
+    eventIcon = eventIcon.split(`.`);
+    eventIcon = setCase(eventIcon[0], `toUpperCase`);
+
+    return {
+      formStartTime: startTime,
+      formEndTime: endTime,
+      formPrice: price,
+      formDestination: destination,
+      formEventType: eventType,
+      formIcon: eventIcon,
+      formDescription: description,
+      formOffers: offers,
+      formFavorite: favorite
+    };
   }
 
 }

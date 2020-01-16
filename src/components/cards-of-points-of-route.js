@@ -17,10 +17,6 @@ import {
   RenderPosition,
 } from './../utils/render.js';
 
-export {
-  renderEventCards
-};
-
 /* ----------------------------------------------------------*/
 // mark-up:
 
@@ -95,14 +91,14 @@ class MarkUpForDayNumberComponent extends AbstractComponent {
   }
 }
 
-const renderEventCards = (events, container, onDataChange, onViewChange) => {
+export const renderEventCards = (events, container, onDataChange, onViewChange, tripController) => {
   const showedControllers = [];
   const pointsOfRouteMap = createMapOfSetsOfSameDays(events);
   // add unordered list of days of trips:
-  const tripSortMenuMarkUp = document.getElementsByClassName(`trip-events__trip-sort`)[0];
+  const tripSortMenu = document.getElementsByClassName(`trip-events__trip-sort`)[0];
 
   // add list trip:
-  render(tripSortMenuMarkUp, container.getElement(), RenderPosition.AFTER);
+  render(tripSortMenu, container.getElement(), RenderPosition.AFTER);
 
   // add days of trip:
   for (const entry of pointsOfRouteMap) {
@@ -116,7 +112,7 @@ const renderEventCards = (events, container, onDataChange, onViewChange) => {
 
     // create points of route for the set of days:
     for (const sameDatePointOfRoute of entry[1]) {
-      const pointController = new PointController(eventsList, onDataChange, onViewChange);
+      const pointController = new PointController(eventsList, onDataChange, onViewChange, tripController);
       pointController.render(sameDatePointOfRoute);
       showedControllers.push(pointController);
     }

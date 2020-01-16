@@ -2,6 +2,8 @@ import {
   MONTHS_MAP
 } from './../const.js';
 
+import moment from 'moment';
+
 export {
   setCase,
   transformEventTypeText,
@@ -139,4 +141,18 @@ const sortPointsOfRouteByTime = (events) => {
   });
   return events;
 };
+
+export const getDateFromInput = (time) => {
+  const timeFormat = `DD/MM/YY HH:mm`;
+  const date = moment(time, timeFormat);
+  const year = date.get(`year`);
+  const month = date.get(`month`);
+  const day = date.get(`date`);
+  const hours = date.get(`hours`);
+  const minutes = date.get(`minutes`);
+
+  return new Date(year, month, day, hours, minutes);
+
+};
+
 

@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 import {
   transformEventTypeText,
   setCase,
@@ -91,18 +93,23 @@ const createEditEventFormMarkUp = (event, options = {}) => {
     formOffers,
     formPrice,
     formIcon,
-    formEventType
+    formEventType,
+    formStartTime,
+    formEndTime
   } = options;
   // transform time from html to design format:
   let editFormMarkup = [];
   let favorite = event.favorite;
   favorite = favorite ? `checked` : ``;
   let offers;
-  if (event.offers.length === 0 && !formOffers || formOffers === `none`) {
+  if (event.offers.length === 0 && !formOffers || formOffers === `noneInForm`) {
     offers = ``;
   } else {
     offers = generateOffersMarkUpInEditForm(event.offers, formOffers);
   }
+  const formatTime = `DD/MM/YY HH:mm`;
+  const startTime = formStartTime || moment(event.startTime).format(formatTime);
+  const endTime = formEndTime || moment(event.endTime).format(formatTime);
 
   editFormMarkup.push(
       `<form class="event  event--edit" action="#" method="post">
@@ -130,12 +137,12 @@ const createEditEventFormMarkUp = (event, options = {}) => {
                <label class="visually-hidden" for="event-start-time-1">
                  From
                </label>
-               <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${event.startTime}">
+               <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startTime}">
                —
                <label class="visually-hidden" for="event-end-time-1">
                  To
                </label>
-               <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${event.endTime}">
+               <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endTime}">
              </div>
   
              <div class="event__field-group  event__field-group--price">
@@ -193,6 +200,8 @@ export class EditEventFormComponent extends AbstractSmartComponent {
     this._icon = null;
     this._eventType = null;
     this._favorite = null;
+    this._startTime = null;
+    this._endTime = null;
 
     this._setSubmitBtnHandler = null;
     this._setEventListBtnClickHandler = null;
@@ -210,6 +219,8 @@ export class EditEventFormComponent extends AbstractSmartComponent {
       formIcon: this._icon,
       formFavorite: this._favorite,
       formEventType: this._eventType,
+      formStartTime: this._startTime,
+      formEndTime: this._endTime
     });
   }
 
@@ -248,6 +259,8 @@ export class EditEventFormComponent extends AbstractSmartComponent {
         this._destination = element.querySelector(`.event__input--destination`).value;
         this._description = descriptionsMap[this._destination];
         this._price = element.querySelector(`.event__input--price`).value;
+        this._startTime = element.querySelector(`#event-start-time-1`).value;
+        this._endTime = element.querySelector(`#event-end-time-1`).value;
         this.rerender();
       });
 
@@ -259,14 +272,14 @@ export class EditEventFormComponent extends AbstractSmartComponent {
         this._icon = getEventTypeIcon(evt);
         this._eventType = transformEventTypeText(setCase(this._icon, `toUpperCase`));
         const offers = offersMap[setCase(this._icon, `toUpperCase`)];
-        this._offers = offers ? offers : `none`;
-        this._price = element.querySelector(`.event__input--price`).value;
+        this._offers = offers ? offers : `noneInForm`;
+        this._price = element.querySelector(`#event-price-1`).value;
+        this._startTime = element.querySelector(`#event-start-time-1`).value;
+        this._endTime = element.querySelector(`#event-end-time-1`).value;
         this.rerender();
       });
     }
   }
-
-
 }
 
 const generateOffersMarkUpInEditForm = (eventOffers, newOffers) => {
@@ -294,9 +307,6 @@ const generateOffersMarkUpInEditForm = (eventOffers, newOffers) => {
 
   return offers;
 };
-/* --------------------------------------------*/
-// classes:
-
 
 /* -------------------------------------------------------------*/
 // other functions:
