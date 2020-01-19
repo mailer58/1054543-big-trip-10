@@ -38,7 +38,12 @@ export default class NewEventController extends FormsCommonListeners {
       render(tripEventsSection, newEventForm, RenderPosition.APPEND);
     } else {
       const tripDays = document.getElementsByClassName(`trip-days`)[0];
-      render(tripDays, newEventForm, RenderPosition.BEFORE);
+      if (tripDays) {
+        render(tripDays, newEventForm, RenderPosition.BEFORE);
+      } else {
+        const tripEventList = document.getElementsByClassName(`trip-events__list`)[0];
+        render(tripEventList, newEventForm, RenderPosition.BEFORE);
+      }
     }
 
     // add listeners:

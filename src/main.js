@@ -21,7 +21,7 @@ import {
   RenderPosition,
 } from './utils/render.js';
 
-const numberOfPointsOfRoute = 10;
+const numberOfPointsOfRoute = 1;
 
 const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(1)`);
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
