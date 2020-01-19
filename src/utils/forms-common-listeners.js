@@ -1,4 +1,3 @@
-const ESC_KEYCODE = 27;
 const pageBody = document.querySelector(`body`);
 
 
@@ -9,18 +8,6 @@ export default class FormsCommonListeners {
     }
   }
 
-  _onEscKeyDownCloseEventsList(evt) {
-    if (evt.keyCode === ESC_KEYCODE) {
-      const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
-      const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
-      eventTypeToggle.checked = !eventTypeToggle.checked;
-      eventTypeList.style.display = `none`;
-
-      document.removeEventListener(`keydown`, this._onEscKeyDownCloseEventsList);
-      pageBody.removeEventListener(`click`, this._onPageBodyClickToCloseEventList);
-      document.addEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
-    }
-  }
   // hide eventList by click on the page:
   _onPageBodyClickToCloseEventList(evt) {
     const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
@@ -30,16 +17,28 @@ export default class FormsCommonListeners {
       !evt.target.matches(`.event__type-icon`) &&
       !evt.target.matches(`.event__type-input`)) {
 
-      if (eventTypeToggle && eventTypeList) {
-        eventTypeToggle.checked = !eventTypeToggle.checked;
+      if (eventTypeList) {
+        eventTypeToggle.checked = false;
         eventTypeList.style.display = `none`;
-      }
 
-      document.removeEventListener(`keydown`, this._onEscKeyDownCloseEventsList);
-      pageBody.removeEventListener(`click`, this._onPageBodyClickToCloseEventList);
-      document.addEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
+        // remove this listener:
+        pageBody.removeEventListener(`click`, this._onPageBodyClickToCloseEventList);
+      }
     }
   }
 
+  onEventListBtnClick(evt) {
+    evt.preventDefault();
 
+    const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
+    const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
+
+    eventTypeToggle.checked = !eventTypeToggle.checked;
+    eventTypeList.style.display = eventTypeToggle.checked ? `block` : `none`;
+    if (eventTypeList.style.display === `block`) {
+      pageBody.addEventListener(`click`, this._onPageBodyClickToCloseEventList);
+    } else {
+      pageBody.removeEventListener(`click`, this._onPageBodyClickToCloseEventList);
+    }
+  }
 }

@@ -13,7 +13,7 @@ MONTHS_MAP.set(10, `NOV`);
 MONTHS_MAP.set(11, `DEC`);
 
 export const FilterType = {
-  ALL: `all`,
+  ALL: `everything`,
   FUTURE: `future`,
   PAST: `past`
 };
@@ -23,4 +23,15 @@ export const DataChange = {
   FAVORITE: `favorite`,
   ADD: `add`,
   REMOVE: `remove`
+};
+
+export const ToggleButton = {
+  ENABLE: `enable`,
+  DISABLE: `disable`
+};
+
+export const SortType = {
+  EVENT: `event`,
+  TIME: `time`,
+  PRICE: `price`
 };

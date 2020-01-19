@@ -21,7 +21,7 @@ import {
   RenderPosition,
 } from './utils/render.js';
 
-const numberOfPointsOfRoute = 5;
+const numberOfPointsOfRoute = 3;
 
 const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(1)`);
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
@@ -29,6 +29,7 @@ const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-chi
 export {
   pointsOfRoute
 };
+
 
 // render menu and filters:
 const siteMenu = new SiteMenuComponent();
@@ -39,12 +40,16 @@ render(filterControlsHeader, filter.getElement(), RenderPosition.AFTER);
 
 // generate an array of points of route:
 const pointsOfRoute = generatePointsOfRoute(numberOfPointsOfRoute);
+
+// create a model:
 const pointsModel = new Points();
 pointsModel.setPoints(pointsOfRoute);
 
-// render events:
+// create tripDaysListComponent:
 const tripDaysListComponent = new TripDaysListComponent();
-const tripController = new TripController(tripDaysListComponent, pointsModel);
+
+// create tripContrller:
+const tripController = new TripController(tripDaysListComponent, filter, pointsModel);
+
+// render events:
 tripController.render();
-
-

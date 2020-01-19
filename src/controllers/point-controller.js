@@ -1,5 +1,6 @@
 import {
   EditEventFormComponent,
+  getFormData
 }
   from './../components/forms.js';
 
@@ -10,7 +11,7 @@ import {
   from './../components/cards-of-points-of-route.js';
 
 import
-FormsCommonListeners, {} from './../utils/forms-common-listeners.js';
+FormsCommonListeners from './../utils/forms-common-listeners.js';
 
 import {
   replace,
@@ -20,13 +21,9 @@ import {
 } from './../utils/render.js';
 
 import {
-  DataChange
+  DataChange,
+  ToggleButton
 } from './../const.js';
-
-import {
-  setCase,
-  getDateFromInput,
-} from "./../utils/common.js";
 
 const Mode = {
   DEFAULT: `default`,
@@ -49,7 +46,7 @@ export default class PointController extends FormsCommonListeners {
     this._onDataChange = onDataChange;
     this._onViewChange = onViewChange;
     this._onPageBodyClickToCloseEventList = super._onPageBodyClickToCloseEventList.bind(this);
-    this._onEscKeyDownCloseEventsList = super._onEscKeyDownCloseEventsList.bind(this);
+    this._resetEditFormData = this.resetEditFormData.bind(this);
   }
 
   render(event) {
@@ -68,6 +65,7 @@ export default class PointController extends FormsCommonListeners {
 
     // add listeners:
     this._pointComponent.setRollUpBtnHandler(() => {
+
       this._replaceCardToEdit();
       document.addEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
     });
@@ -75,8 +73,9 @@ export default class PointController extends FormsCommonListeners {
     // save changes in exisiting event:
     this._editPointComponent.setSubmitBtnHandler((evt) => {
       evt.preventDefault();
+
       this._replaceEditToCard();
-      const formData = this.getFormData();
+      const formData = getFormData(this._editPointComponent);
       const {
         formStartTime,
         formEndTime,
@@ -89,7 +88,7 @@ export default class PointController extends FormsCommonListeners {
         formFavorite
       } = formData;
 
-      const newEvent = {
+      const changedEvent = {
         id: event.id,
         eventType: formEventType,
         destination: formDestination,
@@ -104,7 +103,11 @@ export default class PointController extends FormsCommonListeners {
         favorite: formFavorite,
       };
 
-      this._onDataChange(DataChange.SAVE, event.id, Object.assign({}, newEvent));
+      this._onDataChange(DataChange.SAVE, event.id, Object.assign({}, changedEvent));
+    });
+
+    this._editPointComponent.setDeleteBtnHandler(() => {
+      this._onDataChange(DataChange.REMOVE, event.id);
     });
 
     this._editPointComponent.setFavoriteBtnClickHandler(() => {
@@ -120,26 +123,26 @@ export default class PointController extends FormsCommonListeners {
       this._editPointComponent._event = event;
     });
 
-    this._editPointComponent.setEventListBtnClickHandler((evt) => {
-      evt.preventDefault();
-      const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
-      const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
-      eventTypeToggle.checked = !eventTypeToggle.checked;
-      eventTypeList.style.display = eventTypeToggle.checked ? `block` : `none`;
-      document.removeEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
-      pageBody.addEventListener(`click`, this._onPageBodyClickToCloseEventList);
-      document.addEventListener(`keydown`, this._onEscKeyDownCloseEventsList);
-    });
+    this._editPointComponent.setEventListBtnClickHandler(super.onEventListBtnClick.bind(this));
   }
 
   destroy() {
     remove(this._editPointComponent);
     remove(this._pointComponent);
-    document.removeEventListener(`keydown`, this._onEscKeyDown);
+    document.removeEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
   }
 
   _replaceCardToEdit() {
+    // close opened editing form:
     this._onViewChange();
+
+    // remove preceding unsaved modifications of elements in editing form:
+    this._editPointComponent.removeElement();
+    this._resetEditFormData();
+
+    // restore listeners of editing form:
+    this._editPointComponent.recoveryListeners();
+
     replace(this._editPointComponent, this._pointComponent);
     this._mode = Mode.EDIT;
   }
@@ -147,7 +150,8 @@ export default class PointController extends FormsCommonListeners {
   _replaceEditToCard() {
     replace(this._pointComponent, this._editPointComponent);
     this._mode = Mode.DEFAULT;
-
+    // remove listener:
+    document.removeEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
   }
 
   setDefaultView() {
@@ -158,94 +162,45 @@ export default class PointController extends FormsCommonListeners {
 
   _onEscKeyDownCloseEditForm(evt) {
     const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
-    const editForm = this._editPointComponent.getElement().querySelector(`section`);
-    if (isEscKey && editForm) {
-      // reset edit form:
-      this._editPointComponent._destination = null;
-      this._editPointComponent._description = null;
-      this._editPointComponent._offers = null;
-      this._editPointComponent._price = null;
-      this._editPointComponent._icon = null;
-      this._editPointComponent._eventType = null;
+    if (isEscKey) {
+      const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
+      const eventTypeToggle = document.getElementById(`event-type-toggle-1`);
 
-      // remove listeners:
-      document.removeEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
-      this._editPointComponent.getElement().querySelector(`.event__type-btn`).removeEventListener(`click`, this._setEventListBtnClickHandler);
+      if (eventTypeList.style.display === `block`) {
+        eventTypeToggle.checked = false;
+        eventTypeList.style.display = `none`;
 
-      this._replaceEditToCard();
-      this._editPointComponent.removeElement();
-      this._editPointComponent.recoveryListeners();
+        pageBody.removeEventListener(`click`, this._onPageBodyClickToCloseEventList);
+      } else {
+        // remove listener:
+        document.removeEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
 
+        this._replaceEditToCard();
+      }
     }
   }
 
-  getFormData() {
-    const element = this._editPointComponent.getElement();
-    // const editForm = element.querySelector(`.event.event--edit`);
+  resetEditFormData() {
+    this._editPointComponent._destination = null;
+    this._editPointComponent._description = null;
+    this._editPointComponent._offers = null;
+    this._editPointComponent._price = null;
+    this._editPointComponent._icon = null;
+    this._editPointComponent._eventType = null;
+  }
 
-    // get data from mark-up:
-    let startTime = element.querySelector(`#event-start-time-1`).value;
-    let endTime = element.querySelector(`#event-end-time-1`).value;
+  toggleRollUpBtn(action) {
+    const rollUpBtn = this._pointComponent.getElement().querySelector(`.event__rollup-btn`);
+    switch (action) {
 
-    // get time in format of javascript:
-    startTime = getDateFromInput(startTime);
-    endTime = getDateFromInput(endTime);
+      case ToggleButton.DISABLE:
+        rollUpBtn.disabled = true;
+        break;
 
-    const price = parseInt(element.querySelector(`#event-price-1`).value, 10);
-    const destination = element.querySelector(`#event-destination-1`).value;
-    const description = element.querySelector(`.event__destination-description`).textContent;
-    const favorite = element.querySelector(`#event-favorite-1`).checked;
-    const eventType = element.querySelector(`.event__label.event__type-output`).textContent;
-
-    const offersCollection = element.getElementsByClassName(`event__offer-selector`);
-    const offers = [];
-    let offerTitle;
-    let offerType;
-    let offerName;
-    let offerPrice;
-    let checked;
-    if (offersCollection) {
-      for (const offer of offersCollection) {
-        offerTitle = offer.querySelector(`.event__offer-title`).textContent;
-        offerType = offerTitle.split(`: `);
-        offerName = offerType[1];
-        offerType = offerType[0];
-
-        if (offerType.indexOf(` `)) {
-          offerType = offerTitle.split(` `);
-          offerType = offerType[0];
-        }
-        offerType = offerType === `Check` ? `Check-in` : offerType;
-
-        offerPrice = offer.querySelector(`.event__offer-price`).textContent;
-        checked = offer.getElementsByClassName(`event__offer-checkbox`)[0].checked;
-
-        offers.push({
-          type: offerType,
-          name: offerName,
-          price: offerPrice,
-          isChecked: checked,
-        });
-      }
+      case ToggleButton.ENABLE:
+        rollUpBtn.disabled = false;
+        break;
     }
-
-    let eventIcon = element.querySelector(`.event__type-icon`).getAttribute(`src`);
-    eventIcon = eventIcon.split(`/`);
-    eventIcon = eventIcon[2];
-    eventIcon = eventIcon.split(`.`);
-    eventIcon = setCase(eventIcon[0], `toUpperCase`);
-
-    return {
-      formStartTime: startTime,
-      formEndTime: endTime,
-      formPrice: price,
-      formDestination: destination,
-      formEventType: eventType,
-      formIcon: eventIcon,
-      formDescription: description,
-      formOffers: offers,
-      formFavorite: favorite
-    };
   }
 
 }

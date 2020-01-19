@@ -14,11 +14,7 @@ const getFuturePoints = (points) => {
     const eventStart = moment(point.startTime);
     const diff = now.diff(eventStart, `minutes`);
 
-    if (diff < 0) {
-      return true;
-    }
-
-    return false;
+    return diff < 0;
 
   });
 };
@@ -31,11 +27,7 @@ const getPastPoints = (points) => {
     const eventEnd = moment(point.endTime);
     const diff = now.diff(eventEnd, `minutes`);
 
-    if (diff > 0) {
-      return true;
-    }
-
-    return false;
+    return diff > 0;
 
   });
 };
