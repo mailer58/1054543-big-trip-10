@@ -313,7 +313,6 @@ export class NewEventFormComponent extends AbstractSmartComponent {
     this._endTime = null;
 
     this._onDestinationInputChange = super.onDestinationInputChange.bind(this);
-
     this._subscribeOnEvents();
   }
 
@@ -351,8 +350,6 @@ export class NewEventFormComponent extends AbstractSmartComponent {
     destinationInput.addEventListener(`change`, this._onDestinationInputChange);
 
     // set listeners for options:
-    // debugger;
-
     setOptionsHandlers(this);
   }
 
