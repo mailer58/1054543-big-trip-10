@@ -37,8 +37,8 @@ export default class NewEventController extends FormsCommonListeners {
       const tripEventsSection = document.querySelector(`.trip-events`);
       render(tripEventsSection, newEventForm, RenderPosition.APPEND);
     } else {
-      const sortMenu = document.getElementsByClassName(`trip-days`)[0];
-      render(sortMenu, newEventForm, RenderPosition.BEFORE);
+      const tripDays = document.getElementsByClassName(`trip-days`)[0];
+      render(tripDays, newEventForm, RenderPosition.BEFORE);
     }
 
     // add listeners:
