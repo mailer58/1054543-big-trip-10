@@ -37,7 +37,7 @@ export default class TripController {
     // presence sortMenu in mark-up for NewEventController:
     this._tripSortMenuPresence = false;
 
-    this._currentSortType = SortType.TIME;
+    this._currentSortType = SortType.EVENT;
 
     this._pointsModel = pointsModel;
 
@@ -52,7 +52,6 @@ export default class TripController {
 
     this._tripSortMenuComponent = new TripSortMenuComponent();
     this._onSortTypeChange = this._onSortTypeChange.bind(this);
-    this._tripSortMenuComponent.setSortTypeChangeHandler(this._onSortTypeChange);
 
     this._newEventController = new NewEventController(this, this._onDataChange);
     this._noEventsComponent = new NoEventsComponent(this._pointsModel._activeFilterType);
@@ -86,13 +85,14 @@ export default class TripController {
     remove(this._noEventsComponent);
 
     // remove old controllers:
-    this.removeOldControllers();
+    this.removeOldElements();
 
     // if there are points of route:
     if (this._pointsModel.getPoints().length > 0) {
 
       // show sorting menu:
       render(this._tripEventsHeader, this._tripSortMenuComponent.getElement(), RenderPosition.AFTER);
+      this._tripSortMenuComponent.setSortTypeChangeHandler(this._onSortTypeChange);
       this._tripSortMenuPresence = true;
 
       // show list of events:
@@ -160,7 +160,19 @@ export default class TripController {
     this.render();
   }
 
-  removeOldControllers() {
+  removeOldElements() {
+    // remove old newEventForm when changing filter or sorting:
+    const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
+    if (newEventBtn.disabled) {
+      const newEventForm = this._newEventController._newEventFormComponent;
+      remove(newEventForm);
+
+      this._newEventController = new NewEventController(this, this._onDataChange);
+
+      newEventBtn.disabled = false;
+    }
+
+    // remove old controllers:
     if (this._showedPointControllers.length > 0) {
       // remove controllers of points:
       this._showedPointControllers.forEach((item) => item.destroy());

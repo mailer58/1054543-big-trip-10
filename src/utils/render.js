@@ -4,6 +4,7 @@ export const RenderPosition = {
   BEFOREEND: `beforeend`,
   AFTER: `after`,
   APPEND: `append`,
+  BEFORE: `before`
 };
 
 export const createElement = (template) => {

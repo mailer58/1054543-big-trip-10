@@ -59,7 +59,6 @@ export default class NewEventController extends FormsCommonListeners {
       const {
         formStartTime,
         formEndTime,
-        formPrice,
         formDestination,
         formEventType,
         formIcon,
@@ -68,7 +67,12 @@ export default class NewEventController extends FormsCommonListeners {
         formFavorite
       } = formData;
 
+      let {
+        formPrice
+      } = formData;
+
       const newId = this._tripController._pointsModel.getPointsAll().length + 1;
+      formPrice = formPrice ? formPrice : 0;
 
       const newEvent = {
         id: newId,

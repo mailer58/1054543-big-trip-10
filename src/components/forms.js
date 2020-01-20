@@ -471,7 +471,7 @@ export const getFormData = (form) => {
   const element = form.getElement();
   // const editForm = element.querySelector(`.event.event--edit`);
 
-  // get data from mark-up:
+  // get data from input:
   let startTime = element.querySelector(`#event-start-time-1`).value;
   let endTime = element.querySelector(`#event-end-time-1`).value;
 

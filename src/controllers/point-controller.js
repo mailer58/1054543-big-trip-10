@@ -79,7 +79,6 @@ export default class PointController extends FormsCommonListeners {
       const {
         formStartTime,
         formEndTime,
-        formPrice,
         formDestination,
         formEventType,
         formIcon,
@@ -87,6 +86,12 @@ export default class PointController extends FormsCommonListeners {
         formOffers,
         formFavorite
       } = formData;
+
+      let {
+        formPrice
+      } = formData;
+
+      formPrice = formPrice ? formPrice : 0;
 
       const changedEvent = {
         id: event.id,

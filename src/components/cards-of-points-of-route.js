@@ -1,6 +1,8 @@
 import AbstractComponent from './abstract-component.js';
 import PointController from './../controllers/point-controller.js';
 
+import he from 'he';
+
 import {
   MONTHS_MAP,
   SortType
@@ -23,28 +25,41 @@ const MARGIN_LEFT = `80px`;
 /* ----------------------------------------------------------*/
 // mark-up:
 
-const createMarkUpForPointOfRoute = (sameDatePointOfRoute) => {
-  const [startHours, startMinutes] = getHoursMinutesForPointTime(sameDatePointOfRoute.startTime);
-  const [endHours, endMinutes] = getHoursMinutesForPointTime(sameDatePointOfRoute.endTime);
-  const icon = setCase(sameDatePointOfRoute.eventIcon, `toLowerCase`);
+const createMarkUpForPointOfRoute = (point) => {
+  const destination = he.encode(point.destination); // make data safe
+
+  const price = typeof point.price === `string` ? he.encode(point.price) : point.price;
+
+  let [startHours, startMinutes] = getHoursMinutesForPointTime(point.startTime);
+
+  startHours = typeof startHours === `string` ? he.encode(startHours) : startHours;
+  startMinutes = typeof startMinutes === `string` ? he.encode(startMinutes) : startMinutes;
+
+  let [endHours, endMinutes] = getHoursMinutesForPointTime(point.endTime);
+
+  endHours = typeof endHours === `string` ? he.encode(endHours) : endHours;
+  endMinutes = typeof endMinutes === `string` ? he.encode(endMinutes) : endMinutes;
+
+  const icon = setCase(point.eventIcon, `toLowerCase`);
+
   return `<li class="trip-events__item">
   <div class="event">
     <div class="event__type">
       <img class="event__type-icon" width="42" height="42" src="img/icons/${icon}.png" alt="Event type icon">
     </div>
-    <h3 class="event__title">${sameDatePointOfRoute.eventType} ${sameDatePointOfRoute.destination}</h3>
+    <h3 class="event__title">${point.eventType} ${destination}</h3>
 
     <div class="event__schedule">
       <p class="event__time">
-        <time class="event__start-time" datetime="${createDateTime(`start`, sameDatePointOfRoute)}">${startHours}:${startMinutes}</time>
+        <time class="event__start-time" datetime="${createDateTime(`start`, point)}">${startHours}:${startMinutes}</time>
         &mdash;
-        <time class="event__end-time" datetime="${createDateTime(`end`, sameDatePointOfRoute)}">${endHours}:${endMinutes}</time>
+        <time class="event__end-time" datetime="${createDateTime(`end`, point)}">${endHours}:${endMinutes}</time>
       </p>
-      <p class="event__duration">${getEventDuration(sameDatePointOfRoute)}</p>
+      <p class="event__duration">${getEventDuration(point)}</p>
     </div>
 
     <p class="event__price">
-      &euro;&nbsp;<span class="event__price-value">${sameDatePointOfRoute.price}</span>
+      &euro;&nbsp;<span class="event__price-value">${price}</span>
     </p>
 
     <h4 class="visually-hidden">Offers:</h4>
@@ -101,8 +116,8 @@ export const renderEventCards = (events, container, onDataChange, onViewChange, 
   // add unordered list of days of trips:
   const tripSortMenu = document.getElementsByClassName(`trip-events__trip-sort`)[0];
 
-  // sort and render by time:
-  if (tripController._currentSortType === SortType.TIME) {
+  // sort and render by event:
+  if (tripController._currentSortType === SortType.EVENT) {
 
     const pointsOfRouteMap = createMapOfSetsOfSameDays(events);
 
@@ -141,13 +156,13 @@ export const renderEventCards = (events, container, onDataChange, onViewChange, 
       pointController.render(point);
       showedControllers.push(pointController);
     }
-  } else if (tripController._currentSortType === SortType.EVENT) {
-    // sort and render by events:
+  } else if (tripController._currentSortType === SortType.TIME) {
+    // sort and render by time:
     const points = tripController._pointsModel.getPoints();
     const sortedPoints = points.slice().sort((a, b) => {
-      const string1 = a.eventIcon;
-      const string2 = b.eventIcon;
-      return string1.localeCompare(string2);
+      const eventDuration1 = a.endTime.getTime() - a.startTime.getTime();
+      const eventDuration2 = b.endTime.getTime() - b.startTime.getTime();
+      return eventDuration2 - eventDuration1;
     });
 
     // create unordered list for events:
