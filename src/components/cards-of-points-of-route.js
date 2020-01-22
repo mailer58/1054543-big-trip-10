@@ -1,8 +1,11 @@
-import {} from './../mock/point-of-route.js';
-import AbstractComponent from './abstact-component.js';
+import AbstractComponent from './abstract-component.js';
+import PointController from './../controllers/point-controller.js';
+
+import he from 'he';
 
 import {
-  MONTHS_MAP
+  MONTHS_MAP,
+  SortType
 } from './../const.js';
 
 import {
@@ -17,39 +20,46 @@ import {
   RenderPosition,
 } from './../utils/render.js';
 
-import {
-  EditEventFormComponent
-} from './forms.js';
-
-export {
-  renderEventCards
-};
+const MARGIN_LEFT = `80px`;
 
 /* ----------------------------------------------------------*/
 // mark-up:
 
-const createMarkUpForPointOfRoute = (sameDatePointOfRoute) => {
-  const [startHours, startMinutes] = getHoursMinutesForPointTime(sameDatePointOfRoute.startTime);
-  const [endHours, endMinutes] = getHoursMinutesForPointTime(sameDatePointOfRoute.endTime);
-  const icon = setCase(sameDatePointOfRoute.eventIcon, `toLowerCase`);
+const createMarkUpForPointOfRoute = (point) => {
+  const destination = he.encode(point.destination); // make data safe
+
+  const price = typeof point.price === `string` ? he.encode(point.price) : point.price;
+
+  let [startHours, startMinutes] = getHoursMinutesForPointTime(point.startTime);
+
+  startHours = typeof startHours === `string` ? he.encode(startHours) : startHours;
+  startMinutes = typeof startMinutes === `string` ? he.encode(startMinutes) : startMinutes;
+
+  let [endHours, endMinutes] = getHoursMinutesForPointTime(point.endTime);
+
+  endHours = typeof endHours === `string` ? he.encode(endHours) : endHours;
+  endMinutes = typeof endMinutes === `string` ? he.encode(endMinutes) : endMinutes;
+
+  const icon = setCase(point.eventIcon, `toLowerCase`);
+
   return `<li class="trip-events__item">
   <div class="event">
     <div class="event__type">
       <img class="event__type-icon" width="42" height="42" src="img/icons/${icon}.png" alt="Event type icon">
     </div>
-    <h3 class="event__title">${sameDatePointOfRoute.eventType + ` ` + sameDatePointOfRoute.destination}</h3>
+    <h3 class="event__title">${point.eventType} ${destination}</h3>
 
     <div class="event__schedule">
       <p class="event__time">
-        <time class="event__start-time" datetime="${createDateTime(`start`, sameDatePointOfRoute)}">${startHours + `:` + startMinutes}</time>
+        <time class="event__start-time" datetime="${createDateTime(`start`, point)}">${startHours}:${startMinutes}</time>
         &mdash;
-        <time class="event__end-time" datetime="${createDateTime(`end`, sameDatePointOfRoute)}">${endHours + `:` + endMinutes}</time>
+        <time class="event__end-time" datetime="${createDateTime(`end`, point)}">${endHours}:${endMinutes}</time>
       </p>
-      <p class="event__duration">${getEventDuration(sameDatePointOfRoute)}</p>
+      <p class="event__duration">${getEventDuration(point)}</p>
     </div>
 
     <p class="event__price">
-      &euro;&nbsp;<span class="event__price-value">${sameDatePointOfRoute.price}</span>
+      &euro;&nbsp;<span class="event__price-value">${price}</span>
     </p>
 
     <h4 class="visually-hidden">Offers:</h4>
@@ -62,7 +72,7 @@ const createMarkUpForPointOfRoute = (sameDatePointOfRoute) => {
     `;
 };
 
-class MarkUpForPointOfRouteComponent extends AbstractComponent {
+export class MarkUpForPointOfRouteComponent extends AbstractComponent {
   constructor(sameDatePoint) {
     super();
     this._point = sameDatePoint;
@@ -99,71 +109,76 @@ class MarkUpForDayNumberComponent extends AbstractComponent {
   }
 }
 
+export const renderEventCards = (events, container, onDataChange, onViewChange, tripController) => {
 
-const renderEventCards = (events, container) => {
+  const showedControllers = [];
 
-  const pointsOfRouteMap = createMapOfSetsOfSameDays(events);
   // add unordered list of days of trips:
-  const tripSortMenuMarkUp = document.getElementsByClassName(`trip-events__trip-sort`)[0];
+  const tripSortMenu = document.getElementsByClassName(`trip-events__trip-sort`)[0];
 
-  // add list trip:
-  render(tripSortMenuMarkUp, container.getElement(), RenderPosition.AFTER);
+  // sort and render by event:
+  if (tripController._currentSortType === SortType.EVENT) {
 
-  // add days of trip:
-  for (const entry of pointsOfRouteMap) {
-    const markUpForDayNumberComponent = new MarkUpForDayNumberComponent(entry);
-    render(container.getElement(), markUpForDayNumberComponent.getElement(), RenderPosition.APPEND);
+    const pointsOfRouteMap = createMapOfSetsOfSameDays(events);
 
-    const tripDayItem = markUpForDayNumberComponent.getElement().querySelector(`.day__info`);
+    // add list trip:
+    render(tripSortMenu, container.getElement(), RenderPosition.AFTER);
+
+    // add days of trip:
+    for (const entry of pointsOfRouteMap) {
+      const markUpForDayNumberComponent = new MarkUpForDayNumberComponent(entry);
+      render(container.getElement(), markUpForDayNumberComponent.getElement(), RenderPosition.APPEND);
+
+      const tripDayItem = markUpForDayNumberComponent.getElement().querySelector(`.day__info`);
+      // create unordered list for events:
+      const eventsList = createElement(`<ul class="trip-events__list"></ul>`);
+      render(tripDayItem, eventsList, RenderPosition.AFTER);
+
+      // create points of route for the set of days:
+      for (const sameDatePointOfRoute of entry[1]) {
+        const pointController = new PointController(eventsList, onDataChange, onViewChange, tripController);
+        pointController.render(sameDatePointOfRoute);
+        showedControllers.push(pointController);
+      }
+    }
+  } else if (tripController._currentSortType === SortType.PRICE) {
+    // sort and render by price:
+    const points = tripController._pointsModel.getPoints();
+    const sortedPoints = points.slice().sort((a, b) => b.price - a.price);
+
     // create unordered list for events:
     const eventsList = createElement(`<ul class="trip-events__list"></ul>`);
-    render(tripDayItem, eventsList, RenderPosition.AFTER);
+    eventsList.style.marginLeft = MARGIN_LEFT;
+    render(tripSortMenu, eventsList, RenderPosition.AFTER);
 
-    // create points of route for the set of days:
-    for (const sameDatePointOfRoute of entry[1]) {
-      const markUpForPointOfRoute = new MarkUpForPointOfRouteComponent(sameDatePointOfRoute);
-
-      const replaceCardToEdit = () => {
-        eventsList.replaceChild(editEventForm.getElement(sameDatePointOfRoute), markUpForPointOfRoute.getElement(sameDatePointOfRoute));
-      };
-      const replaceEditToCard = () => {
-        eventsList.replaceChild(markUpForPointOfRoute.getElement(sameDatePointOfRoute), editEventForm.getElement(sameDatePointOfRoute));
-      };
-      const onEscKeyDown = (evt) => {
-        const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
-        const editForm = document.getElementsByClassName(`event  event--edit`)[0];
-        if (isEscKey && editForm) {
-          replaceEditToCard();
-          document.removeEventListener(`keydown`, onEscKeyDown);
-        }
-      };
-
-      // add eventListeners:
-      const onRollUpBtnClick = () => {
-        replaceCardToEdit();
-        document.addEventListener(`keydown`, onEscKeyDown);
-      };
-
-      markUpForPointOfRoute.setRollUpBtnHandler(onRollUpBtnClick);
-
-      const editEventForm = new EditEventFormComponent(sameDatePointOfRoute);
-      const onSaveBtnClick = (evt) => {
-        evt.preventDefault();
-        replaceEditToCard();
-      };
-
-      editEventForm.setSubmitBtnHandler(onSaveBtnClick);
-
-      // render a point of route:
-      render(eventsList, markUpForPointOfRoute.getElement(sameDatePointOfRoute), RenderPosition.APPEND);
-
-      // render offers:
-      const offersHeader = markUpForPointOfRoute.getElement().querySelector(`.event > h4`);
-      const offersComponent = new OffersComponent(sameDatePointOfRoute.offers);
-      const offersMarkUp = offersComponent.getElement();
-      render(offersHeader, offersMarkUp, RenderPosition.AFTER);
+    for (const point of sortedPoints) {
+      const pointController = new PointController(eventsList, onDataChange, onViewChange, tripController);
+      pointController.render(point);
+      showedControllers.push(pointController);
     }
+  } else if (tripController._currentSortType === SortType.TIME) {
+    // sort and render by time:
+    const points = tripController._pointsModel.getPoints();
+    const sortedPoints = points.slice().sort((a, b) => {
+      const eventDuration1 = a.endTime.getTime() - a.startTime.getTime();
+      const eventDuration2 = b.endTime.getTime() - b.startTime.getTime();
+      return eventDuration2 - eventDuration1;
+    });
+
+    // create unordered list for events:
+    const eventsList = createElement(`<ul class="trip-events__list"></ul>`);
+    eventsList.style.marginLeft = MARGIN_LEFT;
+    render(tripSortMenu, eventsList, RenderPosition.AFTER);
+
+    for (const point of sortedPoints) {
+      const pointController = new PointController(eventsList, onDataChange, onViewChange, tripController);
+      pointController.render(point);
+      showedControllers.push(pointController);
+    }
+
+
   }
+  return showedControllers;
 };
 
 // create mark-up for offers in list of events:
@@ -174,7 +189,7 @@ const createOffersMarkUp = (offers) => {
     if (offer.isChecked) {
       offersMarkUp.push(
           `<li class="event__offer">
-       <span class="event__offer-title">${offer.type + ` ` + offer.name}</span>
+       <span class="event__offer-title">${offer.type} ${offer.name}</span>
         +
        €&nbsp;<span class="event__offer-price">${offer.price}</span>
       </li>`
@@ -185,7 +200,7 @@ const createOffersMarkUp = (offers) => {
   return offersMarkUp.join(`\n`);
 };
 
-class OffersComponent extends AbstractComponent {
+export class OffersComponent extends AbstractComponent {
   constructor(offers) {
     super();
     this._offers = offers;

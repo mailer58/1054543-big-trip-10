@@ -1,8 +1,4 @@
-export {
-  MONTHS_MAP
-};
-
-const MONTHS_MAP = new Map();
+export const MONTHS_MAP = new Map();
 MONTHS_MAP.set(0, `JAN`);
 MONTHS_MAP.set(1, `FEB`);
 MONTHS_MAP.set(2, `MAR`);
@@ -15,3 +11,27 @@ MONTHS_MAP.set(8, `SEP`);
 MONTHS_MAP.set(9, `OCT`);
 MONTHS_MAP.set(10, `NOV`);
 MONTHS_MAP.set(11, `DEC`);
+
+export const FilterType = {
+  ALL: `everything`,
+  FUTURE: `future`,
+  PAST: `past`
+};
+
+export const DataChange = {
+  SAVE: `save`,
+  FAVORITE: `favorite`,
+  ADD: `add`,
+  REMOVE: `remove`
+};
+
+export const ToggleButton = {
+  ENABLE: `enable`,
+  DISABLE: `disable`
+};
+
+export const SortType = {
+  EVENT: `event`,
+  TIME: `time`,
+  PRICE: `price`
+};

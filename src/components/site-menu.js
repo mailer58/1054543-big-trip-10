@@ -1,4 +1,4 @@
-import AbstractComponent from './abstact-component';
+import AbstractComponent from './abstract-component';
 
 const itemsOfSiteMenu = [`Table`, `Stats`];
 

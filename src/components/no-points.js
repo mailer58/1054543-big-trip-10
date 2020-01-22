@@ -1,17 +1,37 @@
-import AbstractComponent from './abstact-component';
+import AbstractComponent from './abstract-component';
 
-const createNoEventsMarkUp = () => {
+import {
+  FilterType
+} from './../const.js';
+
+
+const createNoEventsMarkUp = (activeFilterType) => {
+  let message;
+
+  switch (activeFilterType) {
+    case FilterType.ALL:
+      message = `Click New Event to create your first point`;
+      break;
+    case FilterType.FUTURE:
+      message = `There are no future events.`;
+      break;
+    case FilterType.PAST:
+      message = `There are no past events.`;
+      break;
+  }
+
   return (
-    `<p class="trip-events__msg">Click New Event to create your first point</p>
+    `<p class="trip-events__msg">${message}</p>
 `);
 };
 
 export default class NoEventsComponent extends AbstractComponent {
-  constructor() {
+  constructor(activeFilterType) {
     super();
+    this._activeFilterType = activeFilterType;
   }
 
   getTemplate() {
-    return createNoEventsMarkUp();
+    return createNoEventsMarkUp(this._activeFilterType);
   }
 }
