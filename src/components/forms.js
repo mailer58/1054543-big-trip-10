@@ -1,6 +1,16 @@
 import moment from 'moment';
 
 import {
+  DefaultData
+} from './../const.js';
+
+import {
+  render,
+  createElement,
+  RenderPosition
+} from './../utils/render.js';
+
+import {
   getDateFromInput,
   transformEventTypeText,
   setCase,
@@ -9,9 +19,10 @@ import {
 import AbstractSmartComponent from './abstract-smart-component.js';
 
 import {
-  DESTINATIONS,
-  offersMap
-} from './../mock/point-of-route.js';
+  offersMap,
+  photosMap,
+  destinationsMap
+} from './../main.js';
 
 import {
   pointsOfRoute
@@ -38,14 +49,34 @@ const activity = [
   `restaurant`
 ];
 
+
 /* --------------------------------------------------------------*/
 // markup:
 
-const generateMarkUpForListOfDestinations = () => {
+const createPhotoMarkUp = (photos) => {
+  let photoMarkup = [];
+  photoMarkup.push(
+      `<div class="event__photos-container">
+    <div class="event__photos-tape">`);
+  for (const picture of photos) {
+    photoMarkup.push(
+        `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`);
+  }
+  photoMarkup.push(`</div>
+  </div>`);
+
+  photoMarkup = photoMarkup.join(`\n`);
+
+  return photoMarkup;
+};
+
+const generateMarkUpForListOfDestinations = (map) => {
   // generate list of destinations:
   let listOfDestinationsMarkUp = [];
-  for (const item of DESTINATIONS) {
-    listOfDestinationsMarkUp.push(`<option value="${item}"></option>`);
+  if (map) {
+    for (const item of map.keys()) {
+      listOfDestinationsMarkUp.push(`<option value="${item}"></option>`);
+    }
   }
   listOfDestinationsMarkUp = listOfDestinationsMarkUp.join(`\n`);
   return listOfDestinationsMarkUp;
@@ -89,28 +120,39 @@ const createEventsListMarkUp = () => {
 const createEditEventFormMarkUp = (event, options = {}) => {
   const {
     formDestination,
-    formDescription,
     formOffers,
     formPrice,
     formIcon,
     formEventType,
     formStartTime,
-    formEndTime
+    formEndTime,
+    externalData
   } = options;
+
   // transform time from html to design format:
   let editFormMarkup = [];
   let favorite = event.favorite;
   favorite = favorite ? `checked` : ``;
-  let offers;
-  if (event.offers.length === 0 && !formOffers || formOffers === `noneInForm`) {
-    offers = ``;
-  } else {
-    offers = generateOffersMarkUpInEditForm(event.offers, formOffers);
-  }
+
+  const eventType = setCase(formIcon || event.eventType, `toLowerCase`);
+
+  const offers = generateOffersMarkUpInEditForm(event.offers, formOffers, eventType);
+
   const formatTime = `DD/MM/YY HH:mm`;
   const startTime = formStartTime || moment(event.startTime).format(formatTime);
   const endTime = formEndTime || moment(event.endTime).format(formatTime);
 
+  const destinationName = formDestination ? formDestination.name : event.destination.name;
+  const description = formDestination ? formDestination.description : event.destination.description;
+  const photos = formDestination ? formDestination.pictures : event.destination.pictures;
+
+  const isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.saveButtonText === `Saving...`;
+  let isInputError = !checkDestinationValidity(destinationName);
+
+  const deleteButtonText = externalData.deleteButtonText;
+  const saveButtonText = externalData.saveButtonText;
+
+  const price = formPrice || formPrice === 0 ? formPrice : event.price;
 
   editFormMarkup.push(
       `<form class="event  event--edit" action="#" method="post">
@@ -118,7 +160,7 @@ const createEditEventFormMarkUp = (event, options = {}) => {
              <div class="event__type-wrapper">
                <label class="event__type  event__type-btn" for="event-type-toggle-1">
                  <span class="visually-hidden">Choose event type</span>
-                 <img class="event__type-icon" width="17" height="17" src="img/icons/${setCase(formIcon || event.eventIcon, `toLowerCase`)}.png" alt="Event type icon">
+                 <img class="event__type-icon" width="17" height="17" src="img/icons/${eventType}.png" alt="Event type icon">
                </label>
                <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">`);
   editFormMarkup.push(createEventsListMarkUp());
@@ -126,10 +168,10 @@ const createEditEventFormMarkUp = (event, options = {}) => {
       `</div>
   
              <div class="event__field-group  event__field-group--destination">
-               <label class="event__label  event__type-output" for="event-destination-1">${formEventType || event.eventType}</label>
-               <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${formDestination || event.destination}" list="destination-list-1">
+               <label class="event__label  event__type-output" for="event-destination-1">${formEventType || transformEventTypeText(setCase(event.eventType, `toUpperCase`))}</label>
+               <input class="event__input  event__input--destination ${isInputError = isInputError ? `error` : ``}" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1">
                <datalist id="destination-list-1">`);
-  editFormMarkup.push(generateMarkUpForListOfDestinations());
+  editFormMarkup.push(generateMarkUpForListOfDestinations(destinationsMap));
   editFormMarkup.push(
       `</datalist>
              </div>
@@ -151,11 +193,11 @@ const createEditEventFormMarkUp = (event, options = {}) => {
                  <span class="visually-hidden">Price</span>
                  €
                </label>
-               <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${formPrice || event.price}">
+               <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
              </div>
   
-             <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-             <button class="event__reset-btn" type="reset">Delete</button>
+             <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>${saveButtonText}</button>
+             <button class="event__reset-btn" type="reset">${deleteButtonText}</button>
   
              <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${favorite}>
              <label class="event__favorite-btn" for="event-favorite-1">
@@ -168,26 +210,28 @@ const createEditEventFormMarkUp = (event, options = {}) => {
              <button class="event__rollup-btn" type="button">
                <span class="visually-hidden">Open event</span>
              </button>
-           </header>
-  
-           <section class="event__details">
-           ${offers}
-             
-             <section class="event__section  event__section--destination">
-               <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-               <p class="event__destination-description">${formDescription || event.description}</p>`);
-
-  if (event.photo) {
-    editFormMarkup.push(`
-               <div class="event__photos-container">
-                 <div class="event__photos-tape">
-                   <img class="event__photo" src="${event.photo}" alt="Event photo">
-                 </div>
-               </div>`);
+           </header>`);
+  if (offers || description) {
+    editFormMarkup.push(`<section class="event__details">`);
   }
-  editFormMarkup.push(`</section>
-           </section>
-         </form>`);
+  editFormMarkup.push(`${offers}`);
+  if (description) {
+    editFormMarkup.push(
+        `<section class="event__section  event__section--destination">
+               <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+               <p class="event__destination-description">${description}</p>`
+    );
+  }
+
+  if (photos && photos.length > 0) {
+    editFormMarkup.push(createPhotoMarkUp(photos));
+  }
+
+  editFormMarkup.push(`</section>`);
+  if (offers || description) {
+    editFormMarkup.push(`</section>`);
+  }
+  editFormMarkup.push(`</form>`);
   editFormMarkup = editFormMarkup.join(`\n`);
   return editFormMarkup;
 };
@@ -196,22 +240,25 @@ export class EditEventFormComponent extends AbstractSmartComponent {
   constructor(event) {
     super();
     this._event = event;
+
     this._destination = null;
-    this._description = null;
-    this._offers = null;
+    this._offers = [];
     this._price = null;
     this._icon = null;
     this._eventType = null;
     this._favorite = null;
     this._startTime = null;
     this._endTime = null;
+    this._pictures = null;
+
+    this._externalData = DefaultData;
 
     this._setSubmitBtnHandler = null;
     this._setEventListBtnClickHandler = null;
     this._favoriteHandler = null;
     this._setDeleteBtnHandler = null;
 
-    this._onDestinationInputChange = super.onDestinationInputChange.bind(this);
+    this._onDestinationInputChange = onDestinationInputChange.bind(null, this);
 
     this._subscribeOnEvents();
   }
@@ -219,14 +266,14 @@ export class EditEventFormComponent extends AbstractSmartComponent {
   getTemplate() {
     return createEditEventFormMarkUp(this._event, {
       formDestination: this._destination,
-      formDescription: this._description,
       formOffers: this._offers,
       formPrice: this._price,
       formIcon: this._icon,
       formFavorite: this._favorite,
       formEventType: this._eventType,
       formStartTime: this._startTime,
-      formEndTime: this._endTime
+      formEndTime: this._endTime,
+      externalData: this._externalData
     });
   }
 
@@ -267,29 +314,58 @@ export class EditEventFormComponent extends AbstractSmartComponent {
     // set listeners for options:
     setOptionsHandlers(this);
   }
+
 }
 
-const generateOffersMarkUpInEditForm = (eventOffers, newOffers) => {
+const generateOffersMarkUpInEditForm = (eventOffers, newOffers, eventType) => {
   let offers = [];
-  const offersIncoming = newOffers ? newOffers.slice() : eventOffers.slice();
-  offers.push(
-      `<section class="event__section  event__section--offers">
+  let allAvailableOffers = [];
+
+  // get all available offers for this event:
+  for (const offer of offersMap) {
+    if (offer[0] === eventType) {
+      allAvailableOffers = Array.from(offer[1]);
+      break;
+    }
+  }
+
+  let offersIncoming = newOffers ? newOffers.slice() : eventOffers.slice();
+
+  // add available unchecked offers to checked ones:
+  if (offersIncoming.length > 0) {
+    for (const uncheckedOffer of allAvailableOffers) {
+      for (let i = 0; i < offersIncoming.length; i++) {
+        if (uncheckedOffer.title === offersIncoming[i].title) {
+          break;
+        } else if (i === offersIncoming.length - 1) {
+          offersIncoming.push(uncheckedOffer);
+        }
+      }
+    }
+  } else {
+    offersIncoming = offersIncoming.concat(allAvailableOffers);
+  }
+
+  if (offersIncoming.length > 0) {
+    offers.push(
+        `<section class="event__section  event__section--offers">
   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
   <div class="event__available-offers">`);
-  for (const offer of offersIncoming) {
-    const isChecked = offer.isChecked ? `checked` : ``;
-    offers.push(
-        `<div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.name}-1" type="checkbox" name="event-offer-${offer.name}" ${isChecked}>
-      <label class="event__offer-label" for="event-offer-${offer.name}-1">
-        <span class="event__offer-title">${offer.type} ${offer.name}</span>
+    for (const offer of offersIncoming) {
+      const isChecked = offer.isChecked ? `checked` : ``;
+      offers.push(
+          `<div class="event__offer-selector">
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title}-1" type="checkbox" name="event-offer-${offer.title}" ${isChecked}>
+      <label class="event__offer-label" for="event-offer-${offer.title}-1">
+        <span class="event__offer-title">${offer.title}</span>
         +
         €&nbsp;<span class="event__offer-price">${offer.price}</span>
       </label>
     </div>`);
+    }
+    offers.push(`</section>`);
   }
-  offers.push(`</section>`);
   offers = offers.join(`\n`);
 
   return offers;
@@ -311,8 +387,12 @@ export class NewEventFormComponent extends AbstractSmartComponent {
     this._eventType = null;
     this._startTime = null;
     this._endTime = null;
+    this._offers = null;
 
-    this._onDestinationInputChange = super.onDestinationInputChange.bind(this);
+    this._externalData = DefaultData;
+    this._displayNumber = 1;
+
+    this._onDestinationInputChange = onDestinationInputChange.bind(null, this);
     this._subscribeOnEvents();
   }
 
@@ -323,7 +403,10 @@ export class NewEventFormComponent extends AbstractSmartComponent {
       formIcon: this._icon,
       formEventType: this._eventType,
       formStartTime: this._startTime,
-      formEndTime: this._endTime
+      formEndTime: this._endTime,
+      formOffers: this._offers,
+      externalData: this._externalData,
+      displayNumber: this._displayNumber++
     });
   }
 
@@ -362,7 +445,6 @@ export class NewEventFormComponent extends AbstractSmartComponent {
 
 }
 
-
 const createNewEventFormMarkUp = (formData = {}) => {
   const {
     formDestination,
@@ -370,19 +452,49 @@ const createNewEventFormMarkUp = (formData = {}) => {
     formIcon,
     formEventType,
     formStartTime,
-    formEndTime
+    formEndTime,
+    formOffers,
+    externalData,
+    displayNumber
   } = formData;
 
-  const eventType = formEventType || `Flight to`;
-  const price = formPrice || ``;
+  const eventType = formEventType || `Sightseeing at`;
 
-  const icon = formIcon || `flight`;
-  const destination = formDestination || ``;
+  const icon = formIcon || `sightseeing`;
+  const destination = formDestination ? formDestination.name : ``;
+
+  const description = formDestination ? formDestination.description : ``;
 
   const date = new Date();
   const formatTime = `DD/MM/YY HH:mm`;
   const startTime = formStartTime || moment(date).format(formatTime);
   const endTime = formEndTime || moment(date).format(formatTime);
+
+  let offers = [];
+  let availableOffers = [];
+
+  // get all available offers for new event:
+  for (const offer of offersMap) {
+    if (offer[0] === icon) {
+      availableOffers = Array.from(offer[1]);
+      break;
+    }
+  }
+
+  offers = formOffers ? formOffers : availableOffers;
+
+  const photos = formDestination ? formDestination.pictures : [];
+
+  const destinationName = formDestination ? formDestination.name : ``;
+
+  let isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.saveButtonText === `Saving...`;
+  let isInputError = !checkDestinationValidity(destinationName);
+
+  isInputError = displayNumber > 1 && isInputError ? `error` : ``;
+
+  const saveButtonText = externalData.saveButtonText;
+
+  const price = formPrice || formPrice === 0 ? formPrice : ``;
 
   let newEventFormMarkUp = [];
 
@@ -401,11 +513,11 @@ const createNewEventFormMarkUp = (formData = {}) => {
   <label class="event__label  event__type-output" for="event-destination-1">
   ${eventType}
   </label>
-  <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
+  <input class="event__input  event__input--destination ${isInputError}" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
   <datalist id="destination-list-1">`);
 
   // generate list of destinations:
-  newEventFormMarkUp.push(generateMarkUpForListOfDestinations());
+  newEventFormMarkUp.push(generateMarkUpForListOfDestinations(destinationsMap));
 
   newEventFormMarkUp.push(`</datalist>
          </div>
@@ -430,10 +542,46 @@ const createNewEventFormMarkUp = (formData = {}) => {
            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
          </div>
   
-         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+         <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton = isBlockSaveButton ? `disabled` : ``}>${saveButtonText}</button>
          <button class="event__reset-btn" type="reset">Cancel</button>
-       </header>
-     </form>`);
+       </header>`);
+  if (offers.length > 0 || description) {
+    newEventFormMarkUp.push(`<section class="event__details">`);
+    if (offers.length > 0) {
+      newEventFormMarkUp.push(
+          `<section class="event__section  event__section--offers">
+    <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+  
+    <div class="event__available-offers">`);
+      for (const offer of offers) {
+        newEventFormMarkUp.push(
+            `<div class="event__offer-selector">
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title}-1" type="checkbox" name="event-offer-${offer.title}">
+      <label class="event__offer-label" for="event-offer-${offer.title}-1">
+        <span class="event__offer-title">${offer.title}</span>
+        +
+        €&nbsp;<span class="event__offer-price">${offer.price}</span>
+      </label>
+    </div>`);
+      }
+      newEventFormMarkUp.push(`</div>
+    </section>`);
+    }
+    if (description) {
+      newEventFormMarkUp.push(
+          `<section class="event__section  event__section--destination">
+                 <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+                 <p class="event__destination-description">${description}</p>`
+      );
+    }
+    if (photos && photos.length > 0) {
+      newEventFormMarkUp.push(createPhotoMarkUp(photos));
+    }
+    newEventFormMarkUp.push(`</section>
+    </section>`);
+  }
+
+  newEventFormMarkUp.push(`</form>`);
   newEventFormMarkUp = newEventFormMarkUp.join(`\n`);
   return newEventFormMarkUp;
 };
@@ -479,43 +627,35 @@ export const getFormData = (form) => {
   startTime = getDateFromInput(startTime);
   endTime = getDateFromInput(endTime);
 
-  const price = parseInt(element.querySelector(`#event-price-1`).value, 10);
+  let price = parseInt(element.querySelector(`#event-price-1`).value, 10);
+  price = isNaN(price) ? 0 : price;
+
   const destination = element.querySelector(`#event-destination-1`).value;
-  let description = element.querySelector(`.event__destination-description`);
-  description = description ? description.textContent : ``;
+  let formDescription = element.querySelector(`.event__destination-description`);
+  formDescription = formDescription ? formDescription.textContent : ``;
   let favorite = element.querySelector(`#event-favorite-1`);
   favorite = favorite ? favorite.checked : ``;
-  const eventType = element.querySelector(`.event__label.event__type-output`).textContent;
 
   const offersCollection = element.getElementsByClassName(`event__offer-selector`);
+
   const offers = [];
   let offerTitle;
-  let offerType;
-  let offerName;
   let offerPrice;
-  let checked;
+  let offerInput;
   if (offersCollection) {
     for (const offer of offersCollection) {
       offerTitle = offer.querySelector(`.event__offer-title`).textContent;
-      offerType = offerTitle.split(`: `);
-      offerName = offerType[1];
-      offerType = offerType[0];
-
-      if (offerType.indexOf(` `)) {
-        offerType = offerTitle.split(` `);
-        offerType = offerType[0];
-      }
-      offerType = offerType === `Check` ? `Check-in` : offerType;
 
       offerPrice = offer.querySelector(`.event__offer-price`).textContent;
-      checked = offer.getElementsByClassName(`event__offer-checkbox`)[0].checked;
+      offerInput = offer.getElementsByClassName(`event__offer-checkbox`)[0];
 
-      offers.push({
-        type: offerType,
-        name: offerName,
-        price: parseInt(offerPrice, 10),
-        isChecked: checked,
-      });
+      if (offerInput.checked) {
+        offers.push({
+          title: offerTitle,
+          price: parseInt(offerPrice, 10),
+          isChecked: true,
+        });
+      }
     }
   }
 
@@ -523,34 +663,206 @@ export const getFormData = (form) => {
   eventIcon = eventIcon.split(`/`);
   eventIcon = eventIcon[2];
   eventIcon = eventIcon.split(`.`);
-  eventIcon = setCase(eventIcon[0], `toUpperCase`);
+  eventIcon = eventIcon[0];
 
+  const photos = [];
+  const photoCollection = element.querySelectorAll(`.event__photo`);
+  for (const photo of photoCollection) {
+    photos.push({
+      src: photo.getAttribute(`src`),
+      description: photo.getAttribute(`alt`)
+    });
+  }
   return {
     formStartTime: startTime,
     formEndTime: endTime,
-    formPrice: price,
-    formDestination: destination,
-    formEventType: eventType,
-    formIcon: eventIcon,
-    formDescription: description,
+    formDestination: {
+      name: destination,
+      description: formDescription,
+      pictures: photos
+    },
+    formEventType: eventIcon,
     formOffers: offers,
-    formFavorite: favorite
+    formFavorite: favorite,
+    formPrice: price,
   };
 };
 
 const setOptionsHandlers = (element) => {
   const optionsList = element.getElement().querySelectorAll(`.event__type-input`);
+
   for (const item of optionsList) {
     item.addEventListener(`click`, (evt) => {
       // change type of event and offers:
       element._icon = getEventTypeIcon(evt);
       element._eventType = transformEventTypeText(setCase(element._icon, `toUpperCase`));
-      const offers = offersMap[setCase(element._icon, `toUpperCase`)];
+      const offers = offersMap.get(element._icon);
       element._offers = offers ? offers : `noneInForm`;
-      element._price = element.getElement().querySelector(`#event-price-1`).value;
+      element._price = parseInt(element.getElement().querySelector(`#event-price-1`).value, 10);
+      element._price = isNaN(element._price) ? 0 : element._price;
       element._startTime = element.getElement().querySelector(`#event-start-time-1`).value;
       element._endTime = element.getElement().querySelector(`#event-end-time-1`).value;
+
       element.rerender();
     });
   }
+};
+
+const onDestinationInputChange = (element) => {
+  // hide warning border:
+  element.getElement().classList.remove(`error`);
+
+  const formHeader = element.getElement().querySelector(`.event__header`);
+  const saveBtn = element.getElement().querySelector(`.event__save-btn`);
+
+  const destinationInput = element.getElement().querySelector(`#event-destination-1`);
+
+  element._price = element.getElement().querySelector(`.event__input--price`).value;
+  element._startTime = element.getElement().querySelector(`#event-start-time-1`).value;
+  element._endTime = element.getElement().querySelector(`#event-end-time-1`).value;
+
+  // check validity of destination:
+  const isValidDestination = checkDestinationValidity(destinationInput.value);
+
+  saveBtn.disabled = !isValidDestination;
+
+  let eventDetailsSection = element.getElement().querySelector(`.event__details`);
+  let offersSection = element.getElement().querySelector(`.event__section--offers`);
+
+  // change form:
+  if (isValidDestination) {
+    destinationInput.classList.remove(`error`);
+    eventDetailsSection = element.getElement().querySelector(`.event__details`);
+    const descriptionText = element.getElement().querySelector(`.event__destination-description`);
+    if (descriptionText) {
+      descriptionText.textContent = destinationsMap.get(destinationInput.value);
+    } else if (!eventDetailsSection) { // for newEventForm
+      const eventDetailsElement = createElement(`<section class ="event__details"></section>`);
+      render(formHeader, eventDetailsElement, RenderPosition.AFTER);
+    }
+
+    offersSection = element.getElement().querySelector(`.event__section--offers`);
+
+    if (offersSection) {
+      createDestinationMarkup(element, offersSection, RenderPosition.AFTER);
+    } else {
+      eventDetailsSection = element.getElement().querySelector(`.event__details`);
+      createDestinationMarkup(element, eventDetailsSection, RenderPosition.APPEND);
+    }
+
+  } else { // remove a description if a destination is invalid:
+    if (!destinationInput.classList.contains(`error`)) {
+      offersSection = element.getElement().querySelector(`.event__section--offers`);
+
+      if (offersSection) { // keep offers section:
+        const destinationSection = element.getElement().querySelector(`.event__section--destination`);
+        destinationSection.remove();
+
+      } else { // if there is no offers section remove all:
+        eventDetailsSection = element.getElement().querySelector(`.event__details`);
+        if (eventDetailsSection) {
+          eventDetailsSection.remove();
+        }
+      }
+
+      // keep an invalid destination when rerender in case of misprint:
+      element._destination = {
+        name: destinationInput.value,
+      };
+
+      // add red border in case of invalid destination
+      destinationInput.classList.add(`error`);
+
+    }
+  }
+};
+
+const createDestinationMarkup = (element, container, renderPosition) => {
+  const destinationInput = element.getElement().querySelector(`#event-destination-1`);
+  let destinationSection = element.getElement().querySelector(`.event__section--destination`);
+
+  // remove old section:
+  if (destinationSection) {
+    destinationSection.remove();
+  }
+
+  // render event section:
+  const destinationElement = createElement(`<section class="event__section  event__section--destination"></section>`);
+  render(container, destinationElement, renderPosition);
+
+  // render header:
+  destinationSection = element.getElement().querySelector(`.event__section--destination`);
+  const descriptionHeaderElement = createElement(`<h3 class="event__section-title  event__section-title--destination">Destination</h3>`);
+  render(destinationSection, descriptionHeaderElement, RenderPosition.APPEND);
+
+  // render description:
+  const descriptionHeader = element.getElement().querySelector(`.event__section-title--destination`);
+  const descriptionElement = createElement(`<p class="event__destination-description">${destinationsMap.get(destinationInput.value)}</p>`);
+  render(descriptionHeader, descriptionElement, RenderPosition.AFTER);
+
+
+  const photoContainer = element.getElement().querySelector(`.event__photos-container`);
+  if (photoContainer) {
+    photoContainer.remove();
+  }
+
+  let photos = [];
+
+  photosMap.forEach((value, key) => {
+    if (key === destinationInput.value) {
+      photos = Array.from(value);
+    }
+  });
+
+  let photoMarkup;
+  if (photos.length > 0) {
+    photoMarkup = createPhotoMarkUp(photos);
+  }
+
+  photoMarkup = createElement(photoMarkup);
+  render(destinationSection, photoMarkup, RenderPosition.APPEND);
+
+  element._destination = {
+    name: destinationInput.value,
+    description: destinationsMap.get(destinationInput.value),
+    pictures: photos
+  };
+
+};
+
+// check validity of destination:
+
+export const checkDestinationValidity = (destinationInput) => {
+  for (const destination of destinationsMap.keys()) {
+    if (destination === destinationInput) {
+      return true;
+    }
+  }
+  return false;
+};
+
+export const setData = (element, data, formData = {}) => {
+  element._externalData = Object.assign({}, DefaultData, data);
+  const {
+    formStartTime,
+    formEndTime,
+    formDestination,
+    formEventType,
+    formOffers,
+    formFavorite,
+    formPrice
+  } = formData;
+  const formatTime = `DD/MM/YY HH:mm`;
+  const startTime = moment(formStartTime).format(formatTime);
+  const endTime = moment(formEndTime).format(formatTime);
+
+  element._destination = formDestination;
+  element._offers = formOffers;
+  element._price = formPrice;
+  element._eventType = transformEventTypeText(setCase(formEventType, `toUpperCase`));
+  element._favorite = formFavorite;
+  element._startTime = startTime;
+  element._endTime = endTime;
+
+  element.rerender();
 };

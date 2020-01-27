@@ -35,3 +35,16 @@ export const SortType = {
   TIME: `time`,
   PRICE: `price`
 };
+
+export const Method = {
+  GET: `GET`,
+  POST: `POST`,
+  PUT: `PUT`,
+  DELETE: `DELETE`
+};
+
+
+export const DefaultData = {
+  saveButtonText: `Save`,
+  deleteButtonText: `Delete`,
+};

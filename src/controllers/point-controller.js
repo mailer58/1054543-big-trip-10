@@ -1,6 +1,8 @@
 import {
   EditEventFormComponent,
-  getFormData
+  getFormData,
+  checkDestinationValidity,
+  setData
 }
   from './../components/forms.js';
 
@@ -25,16 +27,24 @@ import {
   ToggleButton
 } from './../const.js';
 
+import {
+  toRAW
+} from './../utils/common.js';
+
 const Mode = {
   DEFAULT: `default`,
   EDIT: `edit`,
 };
+
+const SHAKE_ANIMATION_TIMEOUT = 600;
 
 const pageBody = document.querySelector(`body`);
 
 export default class PointController extends FormsCommonListeners {
   constructor(container, onDataChange, onViewChange, tripController) {
     super();
+    this._id = null;
+
     this._container = container;
     this._mode = Mode.DEFAULT;
     this._tripController = tripController;
@@ -50,7 +60,7 @@ export default class PointController extends FormsCommonListeners {
   }
 
   render(event) {
-
+    this._id = event.id;
     this._pointComponent = new MarkUpForPointOfRouteComponent(event);
     this._editPointComponent = new EditEventFormComponent(event);
 
@@ -64,68 +74,83 @@ export default class PointController extends FormsCommonListeners {
     render(offersHeader, offersMarkUp, RenderPosition.AFTER);
 
     // add listeners:
+
+    // set handlers for roll-up buttons:
     this._pointComponent.setRollUpBtnHandler(() => {
 
       this._replaceCardToEdit();
       document.addEventListener(`keydown`, this._onEscKeyDownCloseEditForm);
     });
 
-    // save changes in exisiting event:
+    // set handlers for submit button:
+    // save changes of exisiting event:
     this._editPointComponent.setSubmitBtnHandler((evt) => {
+
       evt.preventDefault();
 
-      this._replaceEditToCard();
+      // get data of form:
       const formData = getFormData(this._editPointComponent);
-      const {
-        formStartTime,
-        formEndTime,
-        formDestination,
-        formEventType,
-        formIcon,
-        formDescription,
-        formOffers,
-        formFavorite
-      } = formData;
 
-      let {
-        formPrice
-      } = formData;
+      // get data for format of server:
+      const changedEvent = toRAW(event.id, formData);
 
-      formPrice = formPrice ? formPrice : 0;
+      // change a text of save button:
+      setData(this._editPointComponent, {
+        saveButtonText: `Saving...`,
+      }, formData);
 
-      const changedEvent = {
-        id: event.id,
-        eventType: formEventType,
-        destination: formDestination,
-        eventIcon: formIcon,
-        startTime: formStartTime,
-        endTime: formEndTime,
-        price: formPrice,
-        photo: event.photo,
-        description: formDescription,
-        offers: formOffers,
-        days: ``,
-        favorite: formFavorite,
-      };
+      // block save and delete buttons:
+      this.blockEditFormButtons();
 
-      this._onDataChange(DataChange.SAVE, event.id, Object.assign({}, changedEvent));
+      // save data:
+      this._onDataChange(DataChange.SAVE, event.id, changedEvent);
     });
 
-    this._editPointComponent.setDeleteBtnHandler(() => {
+    this._editPointComponent.setDeleteBtnHandler((evt) => {
+      evt.preventDefault();
+
+      // get data of form:
+      const formData = getFormData(this._editPointComponent);
+
+      // change a text of save button:
+      setData(this._editPointComponent, {
+        deleteButtonText: `Deleting...`,
+      }, formData);
+
+      // block save and delete buttons:
+      this.blockEditFormButtons();
+
       this._onDataChange(DataChange.REMOVE, event.id);
     });
 
-    this._editPointComponent.setFavoriteBtnClickHandler(() => {
-      // update the array of model:
-      this._onDataChange(DataChange.FAVORITE, event.id, Object.assign({}, event, {
-        favorite: !event.favorite,
-      }));
-      // update event of pointController:
-      event = Object.assign({}, event, {
-        favorite: !event.favorite,
-      });
-      // update event in edit form:
-      this._editPointComponent._event = event;
+    // set handler of favorite button:
+    this._editPointComponent.setFavoriteBtnClickHandler((evt) => {
+      evt.preventDefault();
+      const favoriteInput = this._editPointComponent.getElement().querySelector(`#event-favorite-1`);
+      const destinationInput = this._editPointComponent.getElement().querySelector(`#event-destination-1`);
+      const saveBtn = this._editPointComponent.getElement().querySelector(`.event__save-btn`);
+      const deleteBtn = this._editPointComponent.getElement().querySelector(`.event__reset-btn`);
+
+      // check validity of destination:
+      const isValidDestination = checkDestinationValidity(destinationInput.value);
+
+      if (isValidDestination && saveBtn.textContent === `Save` && deleteBtn.textContent === `Delete` &&
+        !favoriteInput.classList.contains(`disabled`)
+      ) {
+        // get data of form:
+        const formData = getFormData(this._editPointComponent);
+
+        favoriteInput.classList.add(`disabled`);
+
+        // get data for format of server:
+        const changedEvent = toRAW(event.id, formData);
+
+        // set favorite:
+        changedEvent[`is_favorite`] = !changedEvent[`is_favorite`];
+
+        // update favorite:
+        this._onDataChange(DataChange.FAVORITE, event.id, changedEvent);
+      }
     });
 
     this._editPointComponent.setEventListBtnClickHandler(super.onEventListBtnClick.bind(this));
@@ -206,6 +231,18 @@ export default class PointController extends FormsCommonListeners {
         rollUpBtn.disabled = false;
         break;
     }
+  }
+
+  shake() {
+    this._editPointComponent.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
+  }
+
+  blockEditFormButtons() {
+    const saveBtn = this._editPointComponent.getElement().querySelector(`.event__save-btn`);
+    saveBtn.disabled = true;
+
+    const deleteBtn = this._editPointComponent.getElement().querySelector(`.event__reset-btn`);
+    deleteBtn.disabled = true;
   }
 
 }

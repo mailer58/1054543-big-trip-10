@@ -1,14 +1,15 @@
 import AbstractComponent from './abstract-component.js';
 import PointController from './../controllers/point-controller.js';
 
+import moment from 'moment';
 import he from 'he';
 
 import {
-  MONTHS_MAP,
   SortType
 } from './../const.js';
 
 import {
+  transformEventTypeText,
   adjustTimeFormat,
   setCase,
   sortPointsOfRouteByTime
@@ -26,34 +27,37 @@ const MARGIN_LEFT = `80px`;
 // mark-up:
 
 const createMarkUpForPointOfRoute = (point) => {
-  const destination = he.encode(point.destination); // make data safe
+  const destination = he.encode(point.destination.name); // make data safe
 
   const price = typeof point.price === `string` ? he.encode(point.price) : point.price;
 
-  let [startHours, startMinutes] = getHoursMinutesForPointTime(point.startTime);
+  let startTime = point.startTime;
+  startTime = typeof point.startTime === `string` ? he.encode(startTime) : startTime;
+  startTime = moment(point.startTime);
+  const startDateTime = startTime.format(`YYYY-MM-DDTHH:mm`);
+  const startHoursMinutes = startTime.format(`HH:mm`);
 
-  startHours = typeof startHours === `string` ? he.encode(startHours) : startHours;
-  startMinutes = typeof startMinutes === `string` ? he.encode(startMinutes) : startMinutes;
+  let endTime = point.endTime;
+  endTime = typeof point.endTime === `string` ? he.encode(endTime) : endTime;
+  endTime = moment(point.endTime);
+  const endDateTime = endTime.format(`YYYY-MM-DDTHH:mm`);
+  const endHoursMinutes = endTime.format(`HH:mm`);
 
-  let [endHours, endMinutes] = getHoursMinutesForPointTime(point.endTime);
-
-  endHours = typeof endHours === `string` ? he.encode(endHours) : endHours;
-  endMinutes = typeof endMinutes === `string` ? he.encode(endMinutes) : endMinutes;
-
-  const icon = setCase(point.eventIcon, `toLowerCase`);
+  const icon = point.eventType;
+  const eventType = transformEventTypeText(setCase(point.eventType, `toUpperCase`));
 
   return `<li class="trip-events__item">
   <div class="event">
     <div class="event__type">
       <img class="event__type-icon" width="42" height="42" src="img/icons/${icon}.png" alt="Event type icon">
     </div>
-    <h3 class="event__title">${point.eventType} ${destination}</h3>
+    <h3 class="event__title">${eventType} ${destination}</h3>
 
     <div class="event__schedule">
       <p class="event__time">
-        <time class="event__start-time" datetime="${createDateTime(`start`, point)}">${startHours}:${startMinutes}</time>
+        <time class="event__start-time" datetime="${startDateTime}">${startHoursMinutes}</time>
         &mdash;
-        <time class="event__end-time" datetime="${createDateTime(`end`, point)}">${endHours}:${endMinutes}</time>
+        <time class="event__end-time" datetime="${endDateTime}">${endHoursMinutes}</time>
       </p>
       <p class="event__duration">${getEventDuration(point)}</p>
     </div>
@@ -88,12 +92,13 @@ export class MarkUpForPointOfRouteComponent extends AbstractComponent {
 }
 
 const createMarkUpForDayNumber = (entry) => {
+  const dateTime = moment(entry[1][0].startTime);
   return `<li class="trip-days__item  day">
    <div class="day__info">
      <span class="day__counter">${entry[0]}</span>
-     <time class="day__date" datetime="${createDateTime(`yearMonthDay`, entry[1][0])}">
-     ${MONTHS_MAP.get(entry[1][0].startTime.getMonth())} 
-     ${entry[1][0].startTime.getDate()}
+     <time class="day__date" datetime="${dateTime.format(`YYYY-MM-DD`)}">
+     ${dateTime.format(`MMM`)} 
+     ${dateTime.format(`DD`)}
      </time>
    </div>`;
 };
@@ -189,7 +194,7 @@ const createOffersMarkUp = (offers) => {
     if (offer.isChecked) {
       offersMarkUp.push(
           `<li class="event__offer">
-       <span class="event__offer-title">${offer.type} ${offer.name}</span>
+       <span class="event__offer-title">${offer.title}</span>
         +
        €&nbsp;<span class="event__offer-price">${offer.price}</span>
       </li>`
@@ -214,37 +219,6 @@ export class OffersComponent extends AbstractComponent {
 /* ---------------------------------------------------------------*/
 // time:
 
-// create format of time for datetime attribute:
-const createDateTime = (event, sameDatePointOfRoute) => {
-  let dateTime;
-  if (event === `start` || `yearMonthDay`) {
-    const startYear = sameDatePointOfRoute.startTime.getFullYear();
-    let startMonth = sameDatePointOfRoute.startTime.getMonth();
-    const startDay = adjustTimeFormat(sameDatePointOfRoute.startTime.getDate());
-    if (event === `start`) {
-      startMonth = startMonth + 1; // month + 1 => get html format
-      const startHour = adjustTimeFormat(sameDatePointOfRoute.startTime.getHours());
-      const startMinute = adjustTimeFormat(sameDatePointOfRoute.startTime.getMinutes());
-      startMonth = adjustTimeFormat(startMonth);
-      dateTime = `${startYear}-${startMonth}-${startDay}T${startHour}:${startMinute}`;
-    }
-    if (event === `yearMonthDay`) {
-      dateTime = `${startYear}-${startMonth}-${startDay}`;
-    }
-  }
-  if (event === `end`) {
-    const endYear = sameDatePointOfRoute.endTime.getFullYear();
-    let endMonth = sameDatePointOfRoute.endTime.getMonth();
-    endMonth = endMonth + 1;
-    endMonth = adjustTimeFormat(endMonth);
-    const endDay = adjustTimeFormat(sameDatePointOfRoute.endTime.getDate());
-    const endHour = adjustTimeFormat(sameDatePointOfRoute.endTime.getHours());
-    const endMinute = adjustTimeFormat(sameDatePointOfRoute.endTime.getMinutes());
-    dateTime = `${endYear}-${endMonth}-${endDay}T${endHour}:${endMinute}`;
-  }
-  return dateTime;
-};
-
 // get time difference between end and start of event:
 const getEventDuration = (event) => {
   const minute = 1000 * 60;
@@ -265,16 +239,6 @@ const getEventDuration = (event) => {
     return `${adjustTimeFormat(hours)}H ${adjustTimeFormat(minutes)}M`;
   }
   return `${adjustTimeFormat(minutes)}M`;
-};
-
-
-// get hours and minutes for mark-up:
-const getHoursMinutesForPointTime = (pointTime) => {
-  let hours = pointTime.getHours();
-  hours = adjustTimeFormat(hours);
-  let minutes = pointTime.getMinutes();
-  minutes = adjustTimeFormat(minutes);
-  return [hours, minutes];
 };
 
 const createDaysCounters = (events) => {

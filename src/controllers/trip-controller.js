@@ -11,7 +11,7 @@ import {
 
 import {
   computeTotalPrice,
-  renderTripInfo
+  renderTripInfo,
 } from './../utils/common.js';
 
 import {
@@ -27,11 +27,12 @@ TripSortMenuComponent
 import {
   DataChange,
   ToggleButton,
-  SortType
+  SortType,
+  DefaultData
 } from './../const.js';
 
 export default class TripController {
-  constructor(container, filter, pointsModel) {
+  constructor(container, filter, pointsModel, api) {
     this._container = container;
 
     // presence sortMenu in mark-up for NewEventController:
@@ -40,6 +41,8 @@ export default class TripController {
     this._currentSortType = SortType.EVENT;
 
     this._pointsModel = pointsModel;
+
+    this._api = api;
 
     this._showedPointControllers = [];
 
@@ -130,22 +133,88 @@ export default class TripController {
   _onDataChange(mode, id, event) {
     switch (mode) {
       case DataChange.FAVORITE: // toggle favorite:
-        this._pointsModel.updatePoint(id, event);
+        this._api.updatePoint(id, event)
+          .then((PointModel) => {
+            // update a point:
+            const isSuccess = this._pointsModel.updatePoint(id, PointModel);
+            if (isSuccess) {
+              // find required editPointComponent and add updated event to it:
+              const pointController = this.findPointController(id);
+              pointController._editPointComponent._event = PointModel;
+
+              const favoriteInput = pointController._editPointComponent.getElement().querySelector(`#event-favorite-1`);
+
+              // toggle favorite button:
+              favoriteInput.checked = !favoriteInput.checked;
+
+              // enable favorite button
+              favoriteInput.classList.remove(`disabled`);
+            }
+          })
+          .catch(() => {
+            this.handleConnectionErrors(id);
+
+            // find required editPointComponent and add updated event to it:
+            const pointController = this.findPointController(id);
+
+            // enable favorite button:
+            const favoriteInput = pointController._editPointComponent.getElement().querySelector(`#event-favorite-1`);
+            favoriteInput.classList.remove(`disabled`);
+          });
+
         break;
 
       case DataChange.SAVE: // save existing point:
-        this._pointsModel.updatePoint(id, event);
-        this.render();
+        this._api.updatePoint(id, event)
+          .then((PointModel) => {
+            const isSuccess = this._pointsModel.updatePoint(id, PointModel);
+            if (isSuccess) {
+              this.render();
+            }
+          })
+          .catch(() => {
+            this.handleConnectionErrors(id);
+          });
+
         break;
 
       case DataChange.REMOVE: // remove existing point:
-        this._pointsModel.removePoint(id);
-        this.render();
+        this._api.deletePoint(id)
+          .then(() => {
+            this._pointsModel.removePoint(id);
+            this.render();
+          })
+          .catch(() => {
+            this.handleConnectionErrors(id);
+          });
+
         break;
 
       case DataChange.ADD: // add new point:
-        this._pointsModel.addPoint(event);
-        this.render();
+        this._api.createPoint(event)
+          .then((pointModel) => {
+            const isSuccess = this._pointsModel.addPoint(pointModel);
+            if (isSuccess) {
+              this.render();
+            }
+          })
+          .catch(() => {
+            // show warning border:
+            const newEventFormComponent = this._newEventController._newEventFormComponent.getElement();
+            newEventFormComponent.classList.add(`error`);
+            // shake a form:
+            this._newEventController.shake();
+
+            // unblock save button:
+            const saveBtn = newEventFormComponent.querySelector(`.event__save-btn`);
+            saveBtn.disabled = false;
+            saveBtn.textContent = `Save`;
+            this._newEventController._newEventFormComponent._externalData = Object.assign({}, DefaultData, {
+              saveButtonText: `Save`,
+            });
+
+          });
+
         break;
     }
   }
@@ -183,5 +252,52 @@ export default class TripController {
       // remove mark-up of list of days:
       remove(this._container);
     }
+  }
+
+  findPointController(id) {
+    for (const pointController of this._showedPointControllers) {
+      if (pointController._id === id) {
+        return pointController;
+      }
+    }
+    return null;
+  }
+
+  onBodyClickToHideWarning(editPointComponent, handler) {
+    editPointComponent.classList.remove(`error`);
+    document.body.removeEventListener(`click`, handler);
+  }
+
+  // show animation and warning border:
+  handleConnectionErrors(id) {
+
+    const pointController = this.findPointController(id);
+    const editPointComponent = pointController._editPointComponent.getElement();
+
+    // show warning border:
+    editPointComponent.classList.add(`error`);
+
+    // shake a form:
+    pointController.shake();
+
+    // unblock save and delete buttons:
+    const saveBtn = editPointComponent.querySelector(`.event__save-btn`);
+    saveBtn.disabled = false;
+    saveBtn.textContent = `Save`;
+    pointController._editPointComponent._externalData = Object.assign({}, DefaultData, {
+      saveButtonText: `Save`,
+    });
+
+    const deleteBtn = editPointComponent.querySelector(`.event__reset-btn`);
+    deleteBtn.disabled = false;
+    deleteBtn.textContent = `Delete`;
+    pointController._editPointComponent._externalData = Object.assign({}, DefaultData, {
+      deleteButtonText: `Delete`,
+    });
+
+    const onBodyClick = this.onBodyClickToHideWarning.bind(null, editPointComponent, this.onBodyClickToHideWarning);
+
+    document.body.addEventListener(`click`, onBodyClick);
+
   }
 }

@@ -1,6 +1,4 @@
-import {
-  generatePointsOfRoute,
-} from './mock/point-of-route.js';
+import API from './api.js';
 
 import TripDaysListComponent from './components/trip-days-list.js';
 
@@ -21,35 +19,60 @@ import {
   RenderPosition,
 } from './utils/render.js';
 
-const numberOfPointsOfRoute = 5;
-
 const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(1)`);
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
 
-export {
-  pointsOfRoute
-};
-
+const AUTHORIZATION = `Basic RVjB3wrqow5KNfZELpc`;
+const END_POINT = `https://htmlacademy-es-10.appspot.com/big-trip/`;
 
 // render menu and filters:
 const siteMenu = new SiteMenuComponent();
 render(tripControlsHeader, siteMenu.getElement(), RenderPosition.AFTER);
+
 const filter = new FilterComponent();
 render(filterControlsHeader, filter.getElement(), RenderPosition.AFTER);
 
+// create api:
+const api = new API(END_POINT, AUTHORIZATION);
 
-// generate an array of points of route:
-const pointsOfRoute = generatePointsOfRoute(numberOfPointsOfRoute);
+// create maps:
+export const destinationsMap = new Map();
+export const photosMap = new Map();
+export const offersMap = new Map();
 
 // create a model:
 const pointsModel = new Points();
-pointsModel.setPoints(pointsOfRoute);
 
 // create tripDaysListComponent:
 const tripDaysListComponent = new TripDaysListComponent();
 
-// create tripContrller:
-const tripController = new TripController(tripDaysListComponent, filter, pointsModel);
+// get destinations from server:
+const allDestinations = api.getDestinations();
 
-// render events:
-tripController.render();
+// get offers from server:
+const allOffers = api.getOffers();
+
+// get points from server:
+const allPoints = api.getPoints();
+
+Promise.all([allDestinations, allOffers, allPoints])
+  .then((data) => {
+    const [destinations, offers, points] = data;
+
+    destinations.forEach((item) => {
+      destinationsMap.set(item.name, item.description);
+      photosMap.set(item.name, item.pictures);
+    });
+
+    offers.forEach((item) => {
+      offersMap.set(item.type, item.offers);
+    });
+
+    pointsModel.setPoints(points);
+
+    // create tripController:
+    const tripController = new TripController(tripDaysListComponent, filter, pointsModel, api);
+
+    // render events:
+    tripController.render();
+  });

@@ -83,14 +83,14 @@ const renderTripInfo = (events) => {
     // get set of nonrecurrent towns:
     const nonrecurrentTowns = new Set();
     for (const item of events) {
-      nonrecurrentTowns.add(item.destination);
+      nonrecurrentTowns.add(item.destination.name);
     }
     // get count of nonrecurrent towns:
     const nonReccurentTownsCount = nonrecurrentTowns.size;
 
-    const firstTown = events[0].destination;
+    const firstTown = events[0].destination.name;
     const startTime = events[0].startTime;
-    const lastTown = events[events.length - 1].destination;
+    const lastTown = events[events.length - 1].destination.name;
     const endTime = events[events.length - 1].endTime;
 
 
@@ -155,4 +155,34 @@ export const getDateFromInput = (time) => {
 
 };
 
+// get data for format of server:
+export const toRAW = (id, formData = {}) => {
+  const {
+    formStartTime,
+    formEndTime,
+    formDestination,
+    formEventType,
+    formOffers,
+    formFavorite,
+    formPrice
+  } = formData;
 
+  const formatTime = `YYYY-MM-DDTHH:mmZ`;
+  const startTime = moment(formStartTime).format(formatTime);
+  const endTime = moment(formEndTime).format(formatTime);
+
+  // clone objects of offers:
+  const offers = [];
+  formOffers.forEach((offer) => offers.push(JSON.parse(JSON.stringify(offer))));
+
+  return {
+    'id': id,
+    'destination': formDestination,
+    'date_from': startTime,
+    'date_to': endTime,
+    'offers': offers,
+    'base_price': formPrice,
+    'type': formEventType,
+    'is_favorite': formFavorite
+  };
+};
