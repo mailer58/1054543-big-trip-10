@@ -54,6 +54,8 @@ export default class NewEventController extends FormsCommonListeners {
     }
 
     // add listeners:
+    this._newEventFormComponent._subscribeOnEvents();
+
     this._newEventFormComponent.setEventListBtnClickHandler(super.onEventListBtnClick.bind(this));
 
     this._newEventFormComponent.setCancelBtnClickHandler(() => {
@@ -94,8 +96,6 @@ export default class NewEventController extends FormsCommonListeners {
     }
 
     remove(this._newEventFormComponent);
-
-    this._newEventFormComponent._subscribeOnEvents();
 
     const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
     newEventBtn.disabled = false;

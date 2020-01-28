@@ -1,4 +1,6 @@
-import moment from 'moment';
+import flatpickr from 'flatpickr';
+// import 'flatpickr/dist/flatpickr.css';
+// import '~flatpickr/dist/themes/light.css';
 
 import {
   DefaultData
@@ -11,7 +13,6 @@ import {
 } from './../utils/render.js';
 
 import {
-  getDateFromInput,
   transformEventTypeText,
   setCase,
 } from './../utils/common.js';
@@ -23,15 +24,6 @@ import {
   photosMap,
   destinationsMap
 } from './../main.js';
-
-import {
-  pointsOfRoute
-} from './../main.js';
-
-export {
-  createEditEventFormMarkUp,
-  pointsOfRoute,
-};
 
 const transfer = [
   `taxi`,
@@ -138,9 +130,8 @@ const createEditEventFormMarkUp = (event, options = {}) => {
 
   const offers = generateOffersMarkUpInEditForm(event.offers, formOffers, eventType);
 
-  const formatTime = `DD/MM/YY HH:mm`;
-  const startTime = formStartTime || moment(event.startTime).format(formatTime);
-  const endTime = formEndTime || moment(event.endTime).format(formatTime);
+  const startTime = formStartTime || event.startTime;
+  const endTime = formEndTime || event.endTime;
 
   const destinationName = formDestination ? formDestination.name : event.destination.name;
   const description = formDestination ? formDestination.description : event.destination.description;
@@ -247,11 +238,14 @@ export class EditEventFormComponent extends AbstractSmartComponent {
     this._icon = null;
     this._eventType = null;
     this._favorite = null;
-    this._startTime = null;
-    this._endTime = null;
+    this._startTime = this._event.startTime;
+    this._endTime = this._event.endTime;
     this._pictures = null;
 
     this._externalData = DefaultData;
+
+    this._flatpickrStart = null;
+    this._flatpickrEnd = null;
 
     this._setSubmitBtnHandler = null;
     this._setEventListBtnClickHandler = null;
@@ -261,6 +255,8 @@ export class EditEventFormComponent extends AbstractSmartComponent {
     this._onDestinationInputChange = onDestinationInputChange.bind(null, this);
 
     this._subscribeOnEvents();
+
+    applyFlatpickr(this);
   }
 
   getTemplate() {
@@ -313,6 +309,28 @@ export class EditEventFormComponent extends AbstractSmartComponent {
 
     // set listeners for options:
     setOptionsHandlers(this);
+
+    // add calendar:
+    applyFlatpickr(this);
+  }
+
+  removeElement() {
+    if (this._flatpickrStart) {
+      this._flatpickrStart.destroy();
+      this._flatpickrStart = null;
+    }
+    if (this._flatpickrEnd) {
+      this._flatpickrEnd.destroy();
+      this._flatpickrEnd = null;
+    }
+
+    super.removeElement();
+  }
+
+  rerender() {
+    super.rerender();
+
+    applyFlatpickr(this);
   }
 
 }
@@ -392,8 +410,13 @@ export class NewEventFormComponent extends AbstractSmartComponent {
     this._externalData = DefaultData;
     this._displayNumber = 1;
 
+    this._flatpickrStart = null;
+    this._flatpickrEnd = null;
+
     this._onDestinationInputChange = onDestinationInputChange.bind(null, this);
+
     this._subscribeOnEvents();
+    applyFlatpickr(this);
   }
 
   getTemplate() {
@@ -434,6 +457,9 @@ export class NewEventFormComponent extends AbstractSmartComponent {
 
     // set listeners for options:
     setOptionsHandlers(this);
+
+    // add calendar:
+    applyFlatpickr(this);
   }
 
   recoveryListeners() {
@@ -441,6 +467,25 @@ export class NewEventFormComponent extends AbstractSmartComponent {
     this.setSubmitBtnHandler(this._setSubmitBtnHandler);
     this.setEventListBtnClickHandler(this._setEventListBtnClickHandler);
     this.setCancelBtnClickHandler(this._setCancelBtnClickHandler);
+  }
+
+  removeElement() {
+    if (this._flatpickrStart) {
+      this._flatpickrStart.destroy();
+      this._flatpickrStart = null;
+    }
+    if (this._flatpickrEnd) {
+      this._flatpickrEnd.destroy();
+      this._flatpickrEnd = null;
+    }
+
+    super.removeElement();
+  }
+
+  rerender() {
+    super.rerender();
+
+    applyFlatpickr(this);
   }
 
 }
@@ -465,10 +510,11 @@ const createNewEventFormMarkUp = (formData = {}) => {
 
   const description = formDestination ? formDestination.description : ``;
 
-  const date = new Date();
-  const formatTime = `DD/MM/YY HH:mm`;
-  const startTime = formStartTime || moment(date).format(formatTime);
-  const endTime = formEndTime || moment(date).format(formatTime);
+  const startTime = formStartTime || ``;
+  const endTime = formEndTime || ``;
+  const startTimePlaceholder = formStartTime ? `` : `placeholder="Select Date..."`;
+  const endTimePlaceholder = formEndTime ? `` : `placeholder="Select Date..."`;
+
 
   let offers = [];
   let availableOffers = [];
@@ -526,12 +572,12 @@ const createNewEventFormMarkUp = (formData = {}) => {
            <label class="visually-hidden" for="event-start-time-1">
              From
            </label>
-           <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startTime}">
+           <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${startTime}" ${startTimePlaceholder}>
            —
            <label class="visually-hidden" for="event-end-time-1">
              To
            </label>
-           <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endTime}">
+           <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${endTime}" ${endTimePlaceholder}>
          </div>
   
          <div class="event__field-group  event__field-group--price">
@@ -620,12 +666,8 @@ export const getFormData = (form) => {
   // const editForm = element.querySelector(`.event.event--edit`);
 
   // get data from input:
-  let startTime = element.querySelector(`#event-start-time-1`).value;
-  let endTime = element.querySelector(`#event-end-time-1`).value;
-
-  // get time in format of javascript:
-  startTime = getDateFromInput(startTime);
-  endTime = getDateFromInput(endTime);
+  const startTime = element.querySelector(`#event-start-time-1`)._flatpickr;
+  const endTime = element.querySelector(`#event-end-time-1`)._flatpickr;
 
   let price = parseInt(element.querySelector(`#event-price-1`).value, 10);
   price = isNaN(price) ? 0 : price;
@@ -674,8 +716,8 @@ export const getFormData = (form) => {
     });
   }
   return {
-    formStartTime: startTime,
-    formEndTime: endTime,
+    formStartTime: startTime.selectedDates[0],
+    formEndTime: endTime.selectedDates[0],
     formDestination: {
       name: destination,
       description: formDescription,
@@ -700,8 +742,8 @@ const setOptionsHandlers = (element) => {
       element._offers = offers ? offers : `noneInForm`;
       element._price = parseInt(element.getElement().querySelector(`#event-price-1`).value, 10);
       element._price = isNaN(element._price) ? 0 : element._price;
-      element._startTime = element.getElement().querySelector(`#event-start-time-1`).value;
-      element._endTime = element.getElement().querySelector(`#event-end-time-1`).value;
+      element._startTime = element.getElement().querySelector(`#event-start-time-1`)._flatpickr.selectedDates[0];
+      element._endTime = element.getElement().querySelector(`#event-end-time-1`)._flatpickr.selectedDates[0];
 
       element.rerender();
     });
@@ -852,17 +894,52 @@ export const setData = (element, data, formData = {}) => {
     formFavorite,
     formPrice
   } = formData;
-  const formatTime = `DD/MM/YY HH:mm`;
-  const startTime = moment(formStartTime).format(formatTime);
-  const endTime = moment(formEndTime).format(formatTime);
 
   element._destination = formDestination;
   element._offers = formOffers;
   element._price = formPrice;
   element._eventType = transformEventTypeText(setCase(formEventType, `toUpperCase`));
   element._favorite = formFavorite;
-  element._startTime = startTime;
-  element._endTime = endTime;
+  element._startTime = formStartTime;
+  element._endTime = formEndTime;
 
   element.rerender();
+};
+
+// add calendar:
+const applyFlatpickr = (element) => {
+  // delete old instances of flatpickr:
+  if (element._flatpickrStart) {
+    element._flatpickrStart.destroy();
+    element._flatpickrStart = null;
+  }
+
+  if (element._flatpickrEnd) {
+    element._flatpickrEnd.destroy();
+    element._flatpickrEnd = null;
+  }
+
+  const startTime = element.getElement().querySelector(`#event-start-time-1`);
+  const endTime = element.getElement().querySelector(`#event-end-time-1`);
+
+  // add flatpickr:
+  element._flatpickrStart = flatpickr(startTime, {
+    altInput: true,
+    allowInput: false,
+    enableTime: true,
+    altFormat: `d/m/Y H:i`,
+    minuteIncrement: 1,
+    defaultDate: element._startTime ? element._startTime : ``,
+  });
+
+  element._flatpickrEnd = flatpickr(endTime, {
+    altInput: true,
+    allowInput: false,
+    enableTime: true,
+    altFormat: `d/m/Y H:i`,
+    minuteIncrement: 1,
+    defaultDate: element._endTime ? element._endTime : ``,
+  });
+
+
 };
