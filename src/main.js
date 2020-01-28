@@ -1,13 +1,17 @@
 import API from './api.js';
 
 import TripDaysListComponent from './components/trip-days-list.js';
+import Statistics from './components/statistics.js';
+
 
 import TripController from './controllers/trip-controller.js';
 
 import Points from './models/points.js';
 
 import
-SiteMenuComponent
+SiteMenuComponent, {
+  MenuItem
+}
   from './components/site-menu.js';
 
 import
@@ -18,8 +22,6 @@ import {
   render,
   RenderPosition,
 } from './utils/render.js';
-
-// import flatpickr from 'flatpickr';
 
 import 'flatpickr/dist/flatpickr.css';
 
@@ -50,6 +52,9 @@ const pointsModel = new Points();
 // create tripDaysListComponent:
 const tripDaysListComponent = new TripDaysListComponent();
 
+// create statisticsComponent:
+const statisticsComponent = new Statistics();
+
 // get destinations from server:
 const allDestinations = api.getDestinations();
 
@@ -75,8 +80,33 @@ Promise.all([allDestinations, allOffers, allPoints])
     pointsModel.setPoints(points);
 
     // create tripController:
-    const tripController = new TripController(tripDaysListComponent, filter, pointsModel, api);
+    const tripController = new TripController(tripDaysListComponent, siteMenu, filter, pointsModel, api);
 
     // render events:
     tripController.render();
+
+    // activate menu:
+    siteMenu.setOnChange((menuItem) => {
+      switch (menuItem) {
+
+        case MenuItem.STATISTICS:
+
+          tripDaysListComponent.hide();
+          tripController._tripSortMenuComponent.hide();
+          tripController._newEventController._newEventFormComponent.hide();
+
+          filter.hide();
+          statisticsComponent.show();
+          break;
+
+        case MenuItem.TABLE:
+
+          statisticsComponent.hide();
+          filter.show();
+          tripController._tripSortMenuComponent.show();
+          tripController._newEventController._newEventFormComponent.show();
+          tripDaysListComponent.show();
+          break;
+      }
+    });
   });

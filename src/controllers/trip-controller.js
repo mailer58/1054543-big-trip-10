@@ -32,8 +32,10 @@ import {
 } from './../const.js';
 
 export default class TripController {
-  constructor(container, filter, pointsModel, api) {
+  constructor(container, siteMenu, filter, pointsModel, api) {
     this._container = container;
+
+    this._siteMenu = siteMenu;
 
     // presence sortMenu in mark-up for NewEventController:
     this._tripSortMenuPresence = false;
@@ -77,6 +79,17 @@ export default class TripController {
       this._showedPointControllers.forEach((item) => {
         item.toggleRollUpBtn(ToggleButton.DISABLE);
       });
+
+      // return into table mode from stats:
+      const statsBtn = document.querySelector(`#stats`);
+      if (statsBtn.classList.contains(`trip-tabs__btn--active`)) {
+        this._filterComponent.show();
+        this._container.show();
+        this._tripSortMenuComponent.show();
+        const tableBtn = document.querySelector(`#table`);
+        statsBtn.classList.toggle(`trip-tabs__btn--active`);
+        tableBtn.classList.toggle(`trip-tabs__btn--active`);
+      }
 
       // show newEventForm:
       this._newEventController.render();
@@ -299,5 +312,13 @@ export default class TripController {
 
     document.body.addEventListener(`click`, onBodyClick);
 
+  }
+
+  hide() {
+    this._container.hide();
+  }
+
+  show() {
+    this._container.show();
   }
 }
