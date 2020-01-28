@@ -19,6 +19,10 @@ import {
   RenderPosition,
 } from './utils/render.js';
 
+// import flatpickr from 'flatpickr';
+
+import 'flatpickr/dist/flatpickr.css';
+
 const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(1)`);
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
 
