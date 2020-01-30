@@ -62,7 +62,7 @@ export default class Statistics extends AbstractSmartComponent {
         data: {
           labels: events,
           datasets: [{
-            label: `MONEY`,
+            label: `MONEY (€)`,
             data: expenses,
             backgroundColor: `#ff9000`,
             barPercentage: 0.8
@@ -93,7 +93,7 @@ export default class Statistics extends AbstractSmartComponent {
         data: {
           labels: transport,
           datasets: [{
-            label: `TRANSPORT`,
+            label: `TRANSPORT (occasions)`,
             data: counters,
             backgroundColor: `#00f00b`,
             barPercentage: 0.8
@@ -116,7 +116,7 @@ export default class Statistics extends AbstractSmartComponent {
         data: {
           labels: eventsInfo,
           datasets: [{
-            label: `TIME`,
+            label: `TIME (hours)`,
             data: hours,
             backgroundColor: `#5e61f4`,
             barPercentage: 0.8
