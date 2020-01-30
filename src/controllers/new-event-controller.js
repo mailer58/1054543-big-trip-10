@@ -89,6 +89,8 @@ export default class NewEventController extends FormsCommonListeners {
   }
 
   closeNewEventForm() {
+    this._tripController._newEventFormPresence = false;
+
     const saveBtn = this._newEventFormComponent.getElement().querySelector(`.event__save-btn`);
 
     if (saveBtn.textContent === `Save`) {

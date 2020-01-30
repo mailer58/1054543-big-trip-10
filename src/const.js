@@ -15,7 +15,8 @@ MONTHS_MAP.set(11, `DEC`);
 export const FilterType = {
   ALL: `everything`,
   FUTURE: `future`,
-  PAST: `past`
+  PAST: `past`,
+  NOEVENTS: `no events`
 };
 
 export const DataChange = {
@@ -48,3 +49,4 @@ export const DefaultData = {
   saveButtonText: `Save`,
   deleteButtonText: `Delete`,
 };
+

@@ -1,8 +1,6 @@
 import API from './api.js';
 
 import TripDaysListComponent from './components/trip-days-list.js';
-import Statistics from './components/statistics.js';
-
 
 import TripController from './controllers/trip-controller.js';
 
@@ -25,6 +23,7 @@ import {
 
 import 'flatpickr/dist/flatpickr.css';
 
+const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
 const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(1)`);
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
 
@@ -51,9 +50,6 @@ const pointsModel = new Points();
 
 // create tripDaysListComponent:
 const tripDaysListComponent = new TripDaysListComponent();
-
-// create statisticsComponent:
-const statisticsComponent = new Statistics();
 
 // get destinations from server:
 const allDestinations = api.getDestinations();
@@ -96,16 +92,22 @@ Promise.all([allDestinations, allOffers, allPoints])
           tripController._newEventController._newEventFormComponent.hide();
 
           filter.hide();
-          statisticsComponent.show();
+          tripController._statisticsComponent.show();
+          tripController._statisticsComponent.renderStats();
+          newEventBtn.disabled = false;
+
           break;
 
         case MenuItem.TABLE:
 
-          statisticsComponent.hide();
+          tripController._statisticsComponent.hide();
           filter.show();
           tripController._tripSortMenuComponent.show();
           tripController._newEventController._newEventFormComponent.show();
           tripDaysListComponent.show();
+          if (tripController._newEventFormPresence) {
+            newEventBtn.disabled = true;
+          }
           break;
       }
     });

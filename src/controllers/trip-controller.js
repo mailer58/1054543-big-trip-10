@@ -2,6 +2,8 @@ import
 NoEventsComponent
   from './../components/no-points.js';
 
+import Statistics from './../components/statistics.js';
+
 import NewEventController from './../controllers/new-event-controller.js';
 
 import {
@@ -40,6 +42,8 @@ export default class TripController {
     // presence sortMenu in mark-up for NewEventController:
     this._tripSortMenuPresence = false;
 
+    this._newEventFormPresence = null;
+
     this._currentSortType = SortType.EVENT;
 
     this._pointsModel = pointsModel;
@@ -50,6 +54,8 @@ export default class TripController {
 
     this._onDataChange = this._onDataChange.bind(this);
     this._onViewChange = this._onViewChange.bind(this);
+
+    this._statisticsComponent = new Statistics(this);
 
     this._filterComponent = filter;
     this._onFilterTypeChange = this._onFilterTypeChange.bind(this);
@@ -69,6 +75,8 @@ export default class TripController {
   setNewEventBtnClickHandler() {
     const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
     newEventBtn.addEventListener(`click`, () => {
+      this._newEventFormPresence = true;
+
       // disable button of new event:
       newEventBtn.disabled = true;
 
@@ -83,9 +91,12 @@ export default class TripController {
       // return into table mode from stats:
       const statsBtn = document.querySelector(`#stats`);
       if (statsBtn.classList.contains(`trip-tabs__btn--active`)) {
+        this._statisticsComponent.hide();
         this._filterComponent.show();
         this._container.show();
         this._tripSortMenuComponent.show();
+        this._newEventController._newEventFormComponent.show();
+
         const tableBtn = document.querySelector(`#table`);
         statsBtn.classList.toggle(`trip-tabs__btn--active`);
         tableBtn.classList.toggle(`trip-tabs__btn--active`);
@@ -245,7 +256,7 @@ export default class TripController {
   removeOldElements() {
     // remove old newEventForm when changing filter or sorting:
     const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
-    if (newEventBtn.disabled) {
+    if (this._newEventFormPresence) {
       const newEventForm = this._newEventController._newEventFormComponent;
       remove(newEventForm);
 

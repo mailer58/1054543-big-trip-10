@@ -41,6 +41,11 @@ export default class SiteMenuComponent extends AbstractComponent {
       const clickedItemId = evt.target.id;
       let clickedItem = clickedItemId;
       clickedItem = document.getElementById(clickedItem);
+
+      if (clickedItemId === `stats` && clickedItem.classList.contains(`trip-tabs__btn--active`)) {
+        return;
+      }
+
       const menuCollection = this.getElement().querySelectorAll(`.trip-tabs__btn`);
 
       let secondItem;
@@ -61,5 +66,4 @@ export default class SiteMenuComponent extends AbstractComponent {
       handler(clickedItemId);
     });
   }
-
 }
