@@ -41,7 +41,6 @@ const END_POINT = `https://htmlacademy-es-10.appspot.com/big-trip/`;
 window.addEventListener(`load`, () => {
   navigator.serviceWorker.register(`/sw.js`)
     .then(() => {}).catch(() => {
-      // Действие, в случае ошибки при регистрации ServiceWorker
     });
 });
 
@@ -77,10 +76,11 @@ const allOffers = apiWithProvider.getOffers();
 // get points from server:
 const allPoints = apiWithProvider.getPoints();
 
+let tripController;
+
 Promise.all([allDestinations, allOffers, allPoints])
   .then((data) => {
     const [destinations, offers, points] = data;
-
 
     destinations.forEach((item) => {
       destinationsMap.set(item.name, item.description);
@@ -94,7 +94,8 @@ Promise.all([allDestinations, allOffers, allPoints])
     pointsModel.setPoints(points);
 
     // create tripController:
-    const tripController = new TripController(tripDaysListComponent, siteMenu, filter, pointsModel, apiWithProvider);
+    tripController = new TripController(tripDaysListComponent, siteMenu, filter, pointsModel, apiWithProvider);
+    apiWithProvider.addController(tripController);
 
     // render events:
     tripController.render();

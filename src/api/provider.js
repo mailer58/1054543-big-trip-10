@@ -2,13 +2,18 @@ import nanoid from "nanoid";
 
 import Point from "../models/point";
 
-const getSyncedPoints = (items) => items.filter(({success}) => success).map(({payload}) => payload.point);
+const getSyncedPoints = (items) => items.filter(({
+  success
+}) => success).map(({
+  payload
+}) => payload.point);
 
 export default class Provider {
   constructor(api, store) {
     this._api = api;
     this._store = store;
     this._isSynchronized = true;
+    this._tripController = null;
   }
 
   getPoints() {
@@ -107,7 +112,8 @@ export default class Provider {
       offline: true
     }));
 
-    return Promise.resolve(fakeNewPoint);
+    const fakePointAdapted = new Point(fakeNewPoint);
+    return Promise.resolve(fakePointAdapted);
   }
 
   updatePoint(id, point) {
@@ -187,5 +193,9 @@ export default class Provider {
 
   _isOnLine() {
     return window.navigator.onLine;
+  }
+
+  addController(controller) {
+    this._tripController = controller;
   }
 }
