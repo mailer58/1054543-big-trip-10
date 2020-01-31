@@ -1,4 +1,8 @@
-import API from './api.js';
+import API from './api/index.js';
+
+import Store from './api/store.js';
+
+import Provider from './api/provider.js';
 
 import TripDaysListComponent from './components/trip-days-list.js';
 
@@ -27,8 +31,19 @@ const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
 const tripControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(1)`);
 const filterControlsHeader = document.querySelector(`.trip-controls > h2:nth-child(2)`);
 
+const STORE_PREFIX = `bigtrip-localstorage`;
+const STORE_VER = `v1`;
+const STORE_NAME = `${STORE_PREFIX}-${STORE_VER}`;
+
 const AUTHORIZATION = `Basic RVjB3wrqow5KNfZELpc`;
 const END_POINT = `https://htmlacademy-es-10.appspot.com/big-trip/`;
+
+window.addEventListener(`load`, () => {
+  navigator.serviceWorker.register(`/sw.js`)
+    .then(() => {}).catch(() => {
+      // Действие, в случае ошибки при регистрации ServiceWorker
+    });
+});
 
 // render menu and filters:
 const siteMenu = new SiteMenuComponent();
@@ -39,6 +54,8 @@ render(filterControlsHeader, filter.getElement(), RenderPosition.AFTER);
 
 // create api:
 const api = new API(END_POINT, AUTHORIZATION);
+const store = new Store(STORE_NAME, window.localStorage);
+const apiWithProvider = new Provider(api, store);
 
 // create maps:
 export const destinationsMap = new Map();
@@ -52,17 +69,18 @@ const pointsModel = new Points();
 const tripDaysListComponent = new TripDaysListComponent();
 
 // get destinations from server:
-const allDestinations = api.getDestinations();
+const allDestinations = apiWithProvider.getDestinations();
 
 // get offers from server:
-const allOffers = api.getOffers();
+const allOffers = apiWithProvider.getOffers();
 
 // get points from server:
-const allPoints = api.getPoints();
+const allPoints = apiWithProvider.getPoints();
 
 Promise.all([allDestinations, allOffers, allPoints])
   .then((data) => {
     const [destinations, offers, points] = data;
+
 
     destinations.forEach((item) => {
       destinationsMap.set(item.name, item.description);
@@ -76,7 +94,7 @@ Promise.all([allDestinations, allOffers, allPoints])
     pointsModel.setPoints(points);
 
     // create tripController:
-    const tripController = new TripController(tripDaysListComponent, siteMenu, filter, pointsModel, api);
+    const tripController = new TripController(tripDaysListComponent, siteMenu, filter, pointsModel, apiWithProvider);
 
     // render events:
     tripController.render();
@@ -112,3 +130,19 @@ Promise.all([allDestinations, allOffers, allPoints])
       }
     });
   });
+
+window.addEventListener(`online`, () => {
+  document.title = document.title.replace(` [offline]`, ``);
+
+  if (!apiWithProvider.getSynchronize()) {
+    apiWithProvider.sync()
+      .then(() => {
+      })
+      .catch(() => {
+      });
+  }
+});
+
+window.addEventListener(`offline`, () => {
+  document.title += ` [offline]`;
+});

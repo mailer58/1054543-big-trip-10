@@ -1,8 +1,8 @@
-import Point from './models/point.js';
+import Point from './../models/point.js';
 
 import {
   Method
-} from './const.js';
+} from './../const.js';
 
 const checkStatus = (response) => {
   if (response.status >= 200 && response.status < 300) {
@@ -47,7 +47,9 @@ export default class API {
       url: `points`,
       method: Method.POST,
       body: JSON.stringify(point),
-      headers: new Headers({'Content-Type': `application/json`})
+      headers: new Headers({
+        'Content-Type': `application/json`
+      })
     })
       .then((response) => response.json())
       .then(Point.parsePoint);
@@ -67,7 +69,10 @@ export default class API {
   }
 
   deletePoint(id) {
-    return this._load({url: `points/${id}`, method: Method.DELETE});
+    return this._load({
+      url: `points/${id}`,
+      method: Method.DELETE
+    });
 
   }
 
@@ -88,5 +93,16 @@ export default class API {
       .catch((err) => {
         throw err;
       });
+  }
+
+  sync(data) {
+    return this._load({
+      url: `points/sync`,
+      method: Method.POST,
+      body: JSON.stringify(data),
+      headers: new Headers({'Content-Type': `application/json`})
+    })
+      .then((response) => response.json());
+
   }
 }

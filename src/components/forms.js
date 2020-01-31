@@ -533,10 +533,12 @@ const createNewEventFormMarkUp = (formData = {}) => {
 
   const destinationName = formDestination ? formDestination.name : ``;
 
-  let isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.saveButtonText === `Saving...`;
-  let isInputError = !checkDestinationValidity(destinationName);
+  let isBlockSaveButton = `` || externalData.saveButtonText === `Saving...`;
+  const isInputError = ``;
 
-  isInputError = displayNumber > 1 && isInputError ? `error` : ``;
+  // let isInputError = !checkDestinationValidity(destinationName);
+
+  // isInputError = displayNumber > 1 && isInputError ? `error` : ``;
 
   const saveButtonText = externalData.saveButtonText;
 
@@ -766,7 +768,7 @@ const onDestinationInputChange = (element) => {
   // check validity of destination:
   const isValidDestination = checkDestinationValidity(destinationInput.value);
 
-  saveBtn.disabled = !isValidDestination;
+  // saveBtn.disabled = !isValidDestination;
 
   let eventDetailsSection = element.getElement().querySelector(`.event__details`);
   let offersSection = element.getElement().querySelector(`.event__section--offers`);
