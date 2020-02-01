@@ -48,84 +48,11 @@ export default class Statistics extends AbstractSmartComponent {
 
       Chart.defaults.global.defaultFontSize = 17;
 
-      // create the chart of expenses:
-      const moneyCtx = this.getElement().querySelector(`.statistics__chart--money`).getContext(`2d`);
+      createExpensesChart(this, points);
 
-      const [
-        events,
-        expenses
-      ] = computeExpenses(points);
+      createTransportChart(this, points);
 
-      const expensesChart = new Chart(moneyCtx, {
-        type: `horizontalBar`,
-
-        data: {
-          labels: events,
-          datasets: [{
-            label: `MONEY (€)`,
-            data: expenses,
-            backgroundColor: `#ff9000`,
-            barPercentage: 0.8
-          }]
-        },
-
-        options: {
-          title: {
-            display: true,
-            text: `STATISTICS`,
-            fontSize: 25,
-          }
-        }
-      });
-
-      // create the chart of transport:
-      const transportCtx = this.getElement().querySelector(`.statistics__chart--transport`).getContext(`2d`);
-
-      const [
-        transport,
-        counters
-      ] = computeTransport(points);
-
-      const transportChart = new Chart(transportCtx, {
-        type: `horizontalBar`,
-
-        // The data for our dataset
-        data: {
-          labels: transport,
-          datasets: [{
-            label: `TRANSPORT (occasions)`,
-            data: counters,
-            backgroundColor: `#00f00b`,
-            barPercentage: 0.8
-          }]
-        },
-      });
-
-      // create the chart of time:
-      const timeCtx = this.getElement().querySelector(`.statistics__chart--time`).getContext(`2d`);
-
-      const [
-        eventsInfo,
-        hours
-      ] = computeTime(points);
-
-      const timeChart = new Chart(timeCtx, {
-        type: `horizontalBar`,
-
-        // The data for our dataset
-        data: {
-          labels: eventsInfo,
-          datasets: [{
-            label: `TIME (hours)`,
-            data: hours,
-            backgroundColor: `#5e61f4`,
-            barPercentage: 0.8
-          }]
-        },
-
-        // Configuration options go here
-        options: {}
-      });
+      createTimeChart(this, points);
 
     } else { // no stats:
       // set type of message for noEventsComponent:
@@ -257,4 +184,111 @@ const computeTime = (points) => {
   });
 
   return [eventsInfo, hours];
+};
+
+const createExpensesChart = (statsComponent, points) => {
+  // create the chart of expenses:
+  const moneyCtx = statsComponent.getElement().querySelector(`.statistics__chart--money`).getContext(`2d`);
+
+  const [
+    events,
+    expenses
+  ] = computeExpenses(points);
+
+  return new Chart(moneyCtx, {
+    type: `horizontalBar`,
+
+    data: {
+      labels: events,
+      datasets: [{
+        label: `MONEY (€)`,
+        data: expenses,
+        backgroundColor: `#ff9000`,
+        barPercentage: 0.8
+      }]
+    },
+
+    options: {
+      title: {
+        display: true,
+        text: `STATISTICS`,
+        fontSize: 25,
+      },
+      scales: {
+        xAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }]
+      }
+    }
+  });
+};
+
+const createTransportChart = (statsComponent, points) => {
+  // create the chart of transport:
+  const transportCtx = statsComponent.getElement().querySelector(`.statistics__chart--transport`).getContext(`2d`);
+
+  const [
+    transport,
+    counters
+  ] = computeTransport(points);
+
+  return new Chart(transportCtx, {
+    type: `horizontalBar`,
+
+    // The data for our dataset
+    data: {
+      labels: transport,
+      datasets: [{
+        label: `TRANSPORT (occasions)`,
+        data: counters,
+        backgroundColor: `#00f00b`,
+        barPercentage: 0.8
+      }]
+    },
+    options: {
+      scales: {
+        xAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }]
+      }
+    }
+  });
+};
+
+const createTimeChart = (statsComponent, points) => {
+  // create the chart of time:
+  const timeCtx = statsComponent.getElement().querySelector(`.statistics__chart--time`).getContext(`2d`);
+
+  const [
+    eventsInfo,
+    hours
+  ] = computeTime(points);
+
+  return new Chart(timeCtx, {
+    type: `horizontalBar`,
+
+    data: {
+      labels: eventsInfo,
+      datasets: [{
+        label: `TIME (hours)`,
+        data: hours,
+        backgroundColor: `#5e61f4`,
+        barPercentage: 0.8
+      }]
+    },
+    options: {
+      scales: {
+        xAxes: [{
+          ticks: {
+            beginAtZero: true
+          }
+        }]
+      }
+    }
+  });
+
 };
