@@ -6,11 +6,11 @@ import {
 }
   from './../components/forms.js';
 
-import {
-  MarkUpForPointOfRouteComponent,
-  OffersComponent
-}
+import
+MarkUpForPointOfRouteComponent
   from './../components/cards-of-points-of-route.js';
+import OffersComponent
+  from './../components/offers.js';
 
 import
 FormsCommonListeners from './../utils/forms-common-listeners.js';

@@ -55,7 +55,7 @@ const fetchHandler = (evt) => {
           if (cacheResponse) {
             return cacheResponse;
           }
-
+          
           // Если в кэше не нашёлся ответ,
           // повторно вызываем fetch
           // с тем же запросом (request),
