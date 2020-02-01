@@ -162,7 +162,7 @@ const createNewEventFormMarkUp = (formData = {}) => {
 
   const destinationName = formDestination ? formDestination.name : ``;
 
-  let isBlockSaveButton = `` || externalData.saveButtonText === `Saving...`;
+  const isBlockSaveButton = `` || externalData.saveButtonText === `Saving...`;
   const isInputError = ``;
 
   // let isInputError = !checkDestinationValidity(destinationName);
@@ -219,7 +219,7 @@ const createNewEventFormMarkUp = (formData = {}) => {
              <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
            </div>
     
-           <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton = isBlockSaveButton ? `disabled` : ``}>${saveButtonText}</button>
+           <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>${saveButtonText}</button>
            <button class="event__reset-btn" type="reset">Cancel</button>
          </header>`);
   if (offers.length > 0 || description) {

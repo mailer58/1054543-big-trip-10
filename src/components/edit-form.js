@@ -24,6 +24,11 @@ import {
   destinationsMap
 } from './../main.js';
 
+const debounce = require(`lodash.debounce`);
+
+const DEBOUNCE_INTERVAL = 1000;
+
+
 const createEditEventFormMarkUp = (event, options = {}) => {
   const {
     formDestination,
@@ -53,7 +58,7 @@ const createEditEventFormMarkUp = (event, options = {}) => {
   const photos = formDestination ? formDestination.pictures : event.destination.pictures;
 
   const isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.saveButtonText === `Saving...`;
-  let isInputError = !checkDestinationValidity(destinationName);
+  const isInputError = !checkDestinationValidity(destinationName);
 
   const deleteButtonText = externalData.deleteButtonText;
   const saveButtonText = externalData.saveButtonText;
@@ -75,7 +80,7 @@ const createEditEventFormMarkUp = (event, options = {}) => {
   
              <div class="event__field-group  event__field-group--destination">
                <label class="event__label  event__type-output" for="event-destination-1">${formEventType || transformEventTypeText(setCase(event.eventType, `toUpperCase`))}</label>
-               <input class="event__input  event__input--destination ${isInputError = isInputError ? `error` : ``}" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1">
+               <input class="event__input  event__input--destination ${isInputError ? `error` : ``}" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1">
                <datalist id="destination-list-1">`);
   editFormMarkup.push(generateMarkUpForListOfDestinations(destinationsMap));
   editFormMarkup.push(
@@ -155,7 +160,6 @@ export default class EditEventFormComponent extends AbstractSmartComponent {
     this._favorite = null;
     this._startTime = this._event.startTime;
     this._endTime = this._event.endTime;
-    this._pictures = null;
 
     this._externalData = DefaultData;
 
@@ -199,7 +203,7 @@ export default class EditEventFormComponent extends AbstractSmartComponent {
   }
 
   setFavoriteBtnClickHandler(handler) {
-    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, handler);
+    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, debounce(handler, DEBOUNCE_INTERVAL));
     this._favoriteHandler = handler;
   }
 

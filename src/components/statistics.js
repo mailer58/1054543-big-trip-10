@@ -104,7 +104,6 @@ const computeExpenses = (points) => {
 
   // count expenses for each event:
   const expenses = [];
-  const initialValue = 0;
 
   typesOfEvents.forEach((eventType) => {
 
@@ -118,15 +117,8 @@ const computeExpenses = (points) => {
 
       // price of event:
       const eventPrice = filteredPoint.price;
-
-      // count price of all included offers:
-      const offersPrice = filteredPoint.offers.reduce((accumulator, currentValue) => accumulator + currentValue.price, initialValue);
-
-      // get total price of event:
-      const totalEventPrice = eventPrice + offersPrice;
-
       // get total price of events of same type:
-      sameTypeEventsTotalPrice = sameTypeEventsTotalPrice + totalEventPrice;
+      sameTypeEventsTotalPrice = sameTypeEventsTotalPrice + eventPrice;
     });
 
     expenses.push(sameTypeEventsTotalPrice);

@@ -17,7 +17,6 @@ export default class API {
   constructor(endPoint, authorization) {
     this._endPoint = endPoint;
     this._authorization = authorization;
-    this._updatePoint = this.updatePoint.bind(this);
   }
 
   getPoints() {

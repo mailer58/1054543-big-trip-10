@@ -60,6 +60,7 @@ export default class TripController {
     this._filterComponent = filter;
     this._onFilterTypeChange = this._onFilterTypeChange.bind(this);
     this._filterComponent.setFilterTypeChangeHandler(this._onFilterTypeChange);
+    this._filterComponent.getTripController(this);
 
     this._tripSortMenuComponent = new TripSortMenuComponent();
     this._onSortTypeChange = this._onSortTypeChange.bind(this);

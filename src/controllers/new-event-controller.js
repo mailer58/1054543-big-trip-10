@@ -67,6 +67,8 @@ export default class NewEventController extends FormsCommonListeners {
     this._newEventFormComponent.setSubmitBtnHandler((evt) => {
       evt.preventDefault();
 
+      this._tripController._newEventFormPresence = false;
+
       // disable save button:
       const saveBtn = this._newEventFormComponent.getElement().querySelector(`.event__save-btn`);
       saveBtn.disabled = true;

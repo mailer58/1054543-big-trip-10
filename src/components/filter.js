@@ -4,6 +4,10 @@ import {
   FilterType
 } from './../const.js';
 
+import {
+  getPointsByFilter
+} from './../utils/filter.js';
+
 const filterTypes = Object.values(FilterType);
 
 const createFilterTemplate = () => {
@@ -27,10 +31,15 @@ export default class FilterComponent extends AbstractComponent {
   constructor() {
     super();
     this._currenFilterType = FilterType.ALL;
+    this._tripController = null;
   }
 
   getTemplate() {
     return createFilterTemplate();
+  }
+
+  getTripController(tripController) {
+    this._tripController = tripController;
   }
 
   setFilterTypeChangeHandler(handler) {
@@ -42,8 +51,13 @@ export default class FilterComponent extends AbstractComponent {
       if (this._currenFilterType === filterType) {
         return;
       }
+      const allPoints = this._tripController._pointsModel.getPointsAll();
+      const pastPoints = getPointsByFilter(allPoints, FilterType.PAST);
+      const futurePoints = getPointsByFilter(allPoints, FilterType.FUTURE);
 
-      if (filterType) {
+      if (filterType === `past` && pastPoints.length > 0 ||
+      filterType === `future` && futurePoints.length > 0 ||
+      filterType === `everything`) {
         this._currenFilterType = filterType;
         const inputId = `#filter-` + filterType;
         this.getElement().querySelector(inputId).checked = true;
