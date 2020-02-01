@@ -2,10 +2,12 @@ import
 FormsCommonListeners from './../utils/forms-common-listeners.js';
 
 import {
-  NewEventFormComponent,
   getFormData,
   setData
-} from '../components/forms.js';
+} from './../utils/forms-common-func.js';
+
+import NewEventFormComponent
+  from './../components/new-event-form.js';
 
 import {
   toRAW

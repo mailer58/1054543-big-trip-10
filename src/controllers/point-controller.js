@@ -1,10 +1,13 @@
+import
+EditEventFormComponent
+  from './../components/edit-form.js';
+
 import {
-  EditEventFormComponent,
   getFormData,
   checkDestinationValidity,
   setData
 }
-  from './../components/forms.js';
+  from './../utils/forms-common-func.js';
 
 import
 MarkUpForPointOfRouteComponent
