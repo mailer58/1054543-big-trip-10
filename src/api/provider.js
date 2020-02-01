@@ -71,7 +71,7 @@ export default class Provider {
     if (this._isOnLine()) {
       return this._api.getOffers().then(
           (offers) => {
-            offers.forEach((offer) => this._store.setItem(`offers`, offer));
+            offers.forEach(() => this._store.setItem(`offers`, offers));
             return offers;
           }
       );
