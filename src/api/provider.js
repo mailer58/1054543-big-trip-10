@@ -59,7 +59,7 @@ export default class Provider {
     // get destinations from local storage:
     for (const key in storeData) {
       if (key === `destinations`) {
-        storeDestinations.push(storeData[key]);
+        storeDestinations.push(...storeData[key]);
       }
     }
 
@@ -83,7 +83,7 @@ export default class Provider {
     // get offers from local storage:
     for (const key in storeData) {
       if (key === `offers`) {
-        storeOffers.push(storeData[key]);
+        storeOffers.push(...storeData[key]);
       }
     }
 
