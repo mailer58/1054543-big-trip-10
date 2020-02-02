@@ -221,6 +221,7 @@ export default class TripController {
             const isSuccess = this._pointsModel.addPoint(pointModel);
             if (isSuccess) {
               this.render();
+              this._newEventController._closeNewEventForm();
             }
           })
           .catch(() => {

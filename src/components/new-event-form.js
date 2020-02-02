@@ -7,6 +7,8 @@ import {
   setOptionsHandlers,
   applyFlatpickr,
   createPhotoMarkUp,
+  checkDestinationValidity,
+  isValidTimeDifference
 } from './../utils/forms-common-func.js';
 
 import {
@@ -36,13 +38,15 @@ export default class NewEventFormComponent extends AbstractSmartComponent {
     this._endTime = null;
     this._offers = null;
 
+    this._isSaveBtnBlocked = true;
+
     this._externalData = DefaultData;
-    this._displayNumber = 1;
 
     this._flatpickrStart = null;
     this._flatpickrEnd = null;
 
     this._onDestinationInputChange = onDestinationInputChange.bind(null, this);
+    this._isValidTimeDifference = isValidTimeDifference.bind(null, this);
 
     this._subscribeOnEvents();
     applyFlatpickr(this);
@@ -58,7 +62,7 @@ export default class NewEventFormComponent extends AbstractSmartComponent {
       formEndTime: this._endTime,
       formOffers: this._offers,
       externalData: this._externalData,
-      displayNumber: this._displayNumber++
+      isSaveBtnBlocked: this._isSaveBtnBlocked
     });
   }
 
@@ -89,6 +93,13 @@ export default class NewEventFormComponent extends AbstractSmartComponent {
 
     // add calendar:
     applyFlatpickr(this);
+
+    // set listeners for inputs of time:
+    const startTimeInput = this.getElement().querySelector(`#event-start-time-1`);
+    startTimeInput.addEventListener(`change`, this._isValidTimeDifference);
+    const endTimeInput = this.getElement().querySelector(`#event-end-time-1`);
+    endTimeInput.addEventListener(`change`, this._isValidTimeDifference);
+
   }
 
   recoveryListeners() {
@@ -129,7 +140,7 @@ const createNewEventFormMarkUp = (formData = {}) => {
     formEndTime,
     formOffers,
     externalData,
-    displayNumber
+    isSaveBtnBlocked
   } = formData;
 
   const eventType = formEventType || `Sightseeing at`;
@@ -162,12 +173,11 @@ const createNewEventFormMarkUp = (formData = {}) => {
 
   const destinationName = formDestination ? formDestination.name : ``;
 
-  const isBlockSaveButton = `` || externalData.saveButtonText === `Saving...`;
-  const isInputError = ``;
+  const isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.saveButtonText === `Saving...` || isSaveBtnBlocked;
 
-  // let isInputError = !checkDestinationValidity(destinationName);
+  let isInputError = !checkDestinationValidity(destinationName) && destinationName.length > 0;
 
-  // isInputError = displayNumber > 1 && isInputError ? `error` : ``;
+  isInputError = isInputError ? `error` : ``;
 
   const saveButtonText = externalData.saveButtonText;
 

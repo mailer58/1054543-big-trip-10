@@ -34,6 +34,11 @@ import {
   toRAW
 } from './../utils/common.js';
 
+
+const debounce = require(`lodash.debounce`);
+
+const DEBOUNCE_INTERVAL = 1000;
+
 const Mode = {
   DEFAULT: `default`,
   EDIT: `edit`,
@@ -127,7 +132,7 @@ export default class PointController extends FormsCommonListeners {
     });
 
     // set handler of favorite button:
-    this._editPointComponent.setFavoriteBtnClickHandler((evt) => {
+    this._editPointComponent.setFavoriteBtnClickHandler(debounce((evt) => {
       evt.preventDefault();
       const favoriteInput = this._editPointComponent.getElement().querySelector(`#event-favorite-1`);
       const destinationInput = this._editPointComponent.getElement().querySelector(`#event-destination-1`);
@@ -154,7 +159,10 @@ export default class PointController extends FormsCommonListeners {
         // update favorite:
         this._onDataChange(DataChange.FAVORITE, event.id, changedEvent);
       }
-    });
+    }, DEBOUNCE_INTERVAL, {
+      leading: true,
+      trainling: false
+    }));
 
     this._editPointComponent.setEventListBtnClickHandler(super.onEventListBtnClick.bind(this));
   }
@@ -182,6 +190,7 @@ export default class PointController extends FormsCommonListeners {
 
   _replaceEditToCard() {
     replace(this._pointComponent, this._editPointComponent);
+    this._editPointComponent._isSaveBtnBlocked = false;
     this._mode = Mode.DEFAULT;
     // remove listener:
     document.removeEventListener(`keydown`, this._onEscKeyDownCloseEditForm);

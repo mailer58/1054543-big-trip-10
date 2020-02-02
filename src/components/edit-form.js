@@ -5,7 +5,8 @@ import {
   setOptionsHandlers,
   applyFlatpickr,
   createPhotoMarkUp,
-  checkDestinationValidity
+  checkDestinationValidity,
+  isValidTimeDifference
 } from './../utils/forms-common-func.js';
 
 import {
@@ -24,11 +25,6 @@ import {
   destinationsMap
 } from './../main.js';
 
-const debounce = require(`lodash.debounce`);
-
-const DEBOUNCE_INTERVAL = 1000;
-
-
 const createEditEventFormMarkUp = (event, options = {}) => {
   const {
     formDestination,
@@ -38,7 +34,8 @@ const createEditEventFormMarkUp = (event, options = {}) => {
     formEventType,
     formStartTime,
     formEndTime,
-    externalData
+    externalData,
+    isSaveBtnBlocked
   } = options;
 
   // transform time from html to design format:
@@ -57,8 +54,8 @@ const createEditEventFormMarkUp = (event, options = {}) => {
   const description = formDestination ? formDestination.description : event.destination.description;
   const photos = formDestination ? formDestination.pictures : event.destination.pictures;
 
-  const isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.saveButtonText === `Saving...`;
-  const isInputError = !checkDestinationValidity(destinationName);
+  const isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.saveButtonText === `Saving...` || isSaveBtnBlocked;
+  const isInputError = !checkDestinationValidity(destinationName) && destinationName.length > 0;
 
   const deleteButtonText = externalData.deleteButtonText;
   const saveButtonText = externalData.saveButtonText;
@@ -161,6 +158,8 @@ export default class EditEventFormComponent extends AbstractSmartComponent {
     this._startTime = this._event.startTime;
     this._endTime = this._event.endTime;
 
+    this._isSaveBtnBlocked = false;
+
     this._externalData = DefaultData;
 
     this._flatpickrStart = null;
@@ -172,6 +171,8 @@ export default class EditEventFormComponent extends AbstractSmartComponent {
     this._setDeleteBtnHandler = null;
 
     this._onDestinationInputChange = onDestinationInputChange.bind(null, this);
+    this._isValidTimeDifference = isValidTimeDifference.bind(null, this);
+
 
     this._subscribeOnEvents();
 
@@ -188,7 +189,8 @@ export default class EditEventFormComponent extends AbstractSmartComponent {
       formEventType: this._eventType,
       formStartTime: this._startTime,
       formEndTime: this._endTime,
-      externalData: this._externalData
+      externalData: this._externalData,
+      isSaveBtnBlocked: this._isSaveBtnBlocked
     });
   }
 
@@ -203,7 +205,7 @@ export default class EditEventFormComponent extends AbstractSmartComponent {
   }
 
   setFavoriteBtnClickHandler(handler) {
-    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, debounce(handler, DEBOUNCE_INTERVAL));
+    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, handler);
     this._favoriteHandler = handler;
   }
 
@@ -231,6 +233,13 @@ export default class EditEventFormComponent extends AbstractSmartComponent {
 
     // add calendar:
     applyFlatpickr(this);
+
+    // set listeners for inputs of time:
+    const startTimeInput = this.getElement().querySelector(`#event-start-time-1`);
+    startTimeInput.addEventListener(`change`, this._isValidTimeDifference);
+    const endTimeInput = this.getElement().querySelector(`#event-end-time-1`);
+    endTimeInput.addEventListener(`change`, this._isValidTimeDifference);
+
   }
 
   removeElement() {

@@ -21,7 +21,8 @@ import {
 
 import {
   DataChange,
-  ToggleButton
+  ToggleButton,
+  DefaultData
 } from './../const.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
@@ -95,11 +96,9 @@ export default class NewEventController extends FormsCommonListeners {
   closeNewEventForm() {
     this._tripController._newEventFormPresence = false;
 
-    const saveBtn = this._newEventFormComponent.getElement().querySelector(`.event__save-btn`);
+    this.resetNewEventFormData();
 
-    if (saveBtn.textContent === `Save`) {
-      this.resetNewEventFormData();
-    }
+    this._newEventFormComponent._externalData = DefaultData;
 
     remove(this._newEventFormComponent);
 
@@ -126,7 +125,6 @@ export default class NewEventController extends FormsCommonListeners {
     this._newEventFormComponent._startTime = null;
     this._newEventFormComponent._endTime = null;
     this._newEventFormComponent._offers = null;
-    this._newEventFormComponent._displayNumber = 1;
   }
 
   shake() {

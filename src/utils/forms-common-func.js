@@ -1,5 +1,7 @@
 import flatpickr from 'flatpickr';
 
+import moment from 'moment';
+
 import {
   offersMap,
   photosMap,
@@ -53,14 +55,19 @@ export const onDestinationInputChange = (element) => {
   // check validity of destination:
   const isValidDestination = checkDestinationValidity(destinationInput.value);
 
-  // saveBtn.disabled = !isValidDestination;
+  saveBtn.disabled = !isValidDestination || !isValidTimeDifference(element);
 
   let eventDetailsSection = element.getElement().querySelector(`.event__details`);
   let offersSection = element.getElement().querySelector(`.event__section--offers`);
 
+
+  element._destination = {
+    name: destinationInput.value,
+  };
+  destinationInput.classList.remove(`error`);
   // change form:
-  if (isValidDestination) {
-    destinationInput.classList.remove(`error`);
+  if (isValidDestination && destinationInput.value.length > 0) {
+
     eventDetailsSection = element.getElement().querySelector(`.event__details`);
     const descriptionText = element.getElement().querySelector(`.event__destination-description`);
     if (descriptionText) {
@@ -85,7 +92,9 @@ export const onDestinationInputChange = (element) => {
 
       if (offersSection) { // keep offers section:
         const destinationSection = element.getElement().querySelector(`.event__section--destination`);
-        destinationSection.remove();
+        if (destinationSection) {
+          destinationSection.remove();
+        }
 
       } else { // if there is no offers section remove all:
         eventDetailsSection = element.getElement().querySelector(`.event__details`);
@@ -99,11 +108,13 @@ export const onDestinationInputChange = (element) => {
         name: destinationInput.value,
       };
 
-      // add red border in case of invalid destination
+    }
+    // add red border in case of invalid destination
+    if (destinationInput.value.length > 0) {
       destinationInput.classList.add(`error`);
-
     }
   }
+
 };
 
 export const createEventsListMarkUp = () => {
@@ -407,4 +418,37 @@ export const setData = (element, data, formData = {}) => {
   element._endTime = formEndTime;
 
   element.rerender();
+};
+
+export const isValidTimeDifference = (element) => {
+  const saveBtn = element.getElement().querySelector(`.event__save-btn`);
+
+  const timeFormat = `YY-MM-DD HH:mm`;
+  const startTimeInput = element.getElement().querySelector(`#event-start-time-1`);
+  let startTime = startTimeInput.value;
+  const endTimeInput = element.getElement().querySelector(`#event-end-time-1`);
+  let endTime = endTimeInput.value;
+
+  if (!startTime || !endTime) {
+    element._isSaveBtnBlocked = true;
+    saveBtn.disabled = true;
+    return false;
+  }
+
+  startTime = moment(startTime, timeFormat);
+  endTime = moment(endTime, timeFormat);
+
+  const diff = endTime.diff(startTime, `minutes`);
+
+  const result = diff > 0 ? true : false;
+  element._isSaveBtnBlocked = !result;
+
+  // check validity of destination:
+  const destinationInput = element.getElement().querySelector(`#event-destination-1`);
+
+  const isValidDestination = checkDestinationValidity(destinationInput.value);
+
+  saveBtn.disabled = !isValidDestination || !result;
+
+  return result;
 };
