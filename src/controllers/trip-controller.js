@@ -2,6 +2,8 @@ import
 NoEventsComponent
   from './../components/no-points.js';
 
+import Statistics from './../components/statistics.js';
+
 import NewEventController from './../controllers/new-event-controller.js';
 
 import {
@@ -11,7 +13,7 @@ import {
 
 import {
   computeTotalPrice,
-  renderTripInfo
+  renderTripInfo,
 } from './../utils/common.js';
 
 import {
@@ -27,28 +29,38 @@ TripSortMenuComponent
 import {
   DataChange,
   ToggleButton,
-  SortType
+  SortType,
+  DefaultData
 } from './../const.js';
 
 export default class TripController {
-  constructor(container, filter, pointsModel) {
+  constructor(container, siteMenu, filter, pointsModel, api) {
     this._container = container;
+
+    this._siteMenu = siteMenu;
 
     // presence sortMenu in mark-up for NewEventController:
     this._tripSortMenuPresence = false;
 
+    this._newEventFormPresence = null;
+
     this._currentSortType = SortType.EVENT;
 
     this._pointsModel = pointsModel;
+
+    this._api = api;
 
     this._showedPointControllers = [];
 
     this._onDataChange = this._onDataChange.bind(this);
     this._onViewChange = this._onViewChange.bind(this);
 
+    this._statisticsComponent = new Statistics(this);
+
     this._filterComponent = filter;
     this._onFilterTypeChange = this._onFilterTypeChange.bind(this);
     this._filterComponent.setFilterTypeChangeHandler(this._onFilterTypeChange);
+    this._filterComponent.getTripController(this);
 
     this._tripSortMenuComponent = new TripSortMenuComponent();
     this._onSortTypeChange = this._onSortTypeChange.bind(this);
@@ -64,6 +76,8 @@ export default class TripController {
   setNewEventBtnClickHandler() {
     const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
     newEventBtn.addEventListener(`click`, () => {
+      this._newEventFormPresence = true;
+
       // disable button of new event:
       newEventBtn.disabled = true;
 
@@ -74,6 +88,20 @@ export default class TripController {
       this._showedPointControllers.forEach((item) => {
         item.toggleRollUpBtn(ToggleButton.DISABLE);
       });
+
+      // return into table mode from stats:
+      const statsBtn = document.querySelector(`#stats`);
+      if (statsBtn.classList.contains(`trip-tabs__btn--active`)) {
+        this._statisticsComponent.hide();
+        this._filterComponent.show();
+        this._container.show();
+        this._tripSortMenuComponent.show();
+        this._newEventController._newEventFormComponent.show();
+
+        const tableBtn = document.querySelector(`#table`);
+        statsBtn.classList.toggle(`trip-tabs__btn--active`);
+        tableBtn.classList.toggle(`trip-tabs__btn--active`);
+      }
 
       // show newEventForm:
       this._newEventController.render();
@@ -130,22 +158,89 @@ export default class TripController {
   _onDataChange(mode, id, event) {
     switch (mode) {
       case DataChange.FAVORITE: // toggle favorite:
-        this._pointsModel.updatePoint(id, event);
+        this._api.updatePoint(id, event)
+          .then((PointModel) => {
+            // update a point:
+            const isSuccess = this._pointsModel.updatePoint(id, PointModel);
+            if (isSuccess) {
+              // find required editPointComponent and add updated event to it:
+              const pointController = this.findPointController(id);
+              pointController._editPointComponent._event = PointModel;
+
+              const favoriteInput = pointController._editPointComponent.getElement().querySelector(`#event-favorite-1`);
+
+              // toggle favorite button:
+              favoriteInput.checked = !favoriteInput.checked;
+
+              // enable favorite button
+              favoriteInput.classList.remove(`disabled`);
+            }
+          })
+          .catch(() => {
+            this.handleConnectionErrors(id);
+
+            // find required editPointComponent and add updated event to it:
+            const pointController = this.findPointController(id);
+
+            // enable favorite button:
+            const favoriteInput = pointController._editPointComponent.getElement().querySelector(`#event-favorite-1`);
+            favoriteInput.classList.remove(`disabled`);
+          });
+
         break;
 
       case DataChange.SAVE: // save existing point:
-        this._pointsModel.updatePoint(id, event);
-        this.render();
+        this._api.updatePoint(id, event)
+          .then((PointModel) => {
+            const isSuccess = this._pointsModel.updatePoint(id, PointModel);
+            if (isSuccess) {
+              this.render();
+            }
+          })
+          .catch(() => {
+            this.handleConnectionErrors(id);
+          });
+
         break;
 
       case DataChange.REMOVE: // remove existing point:
-        this._pointsModel.removePoint(id);
-        this.render();
+        this._api.deletePoint(id)
+          .then(() => {
+            this._pointsModel.removePoint(id);
+            this.render();
+          })
+          .catch(() => {
+            this.handleConnectionErrors(id);
+          });
+
         break;
 
       case DataChange.ADD: // add new point:
-        this._pointsModel.addPoint(event);
-        this.render();
+        this._api.createPoint(event)
+          .then((pointModel) => {
+            const isSuccess = this._pointsModel.addPoint(pointModel);
+            if (isSuccess) {
+              this.render();
+              this._newEventController._closeNewEventForm();
+            }
+          })
+          .catch(() => {
+            // show warning border:
+            const newEventFormComponent = this._newEventController._newEventFormComponent.getElement();
+            newEventFormComponent.classList.add(`error`);
+            // shake a form:
+            this._newEventController.shake();
+
+            // unblock save button:
+            const saveBtn = newEventFormComponent.querySelector(`.event__save-btn`);
+            saveBtn.disabled = false;
+            saveBtn.textContent = `Save`;
+            this._newEventController._newEventFormComponent._externalData = Object.assign({}, DefaultData, {
+              saveButtonText: `Save`,
+            });
+
+          });
+
         break;
     }
   }
@@ -163,7 +258,7 @@ export default class TripController {
   removeOldElements() {
     // remove old newEventForm when changing filter or sorting:
     const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
-    if (newEventBtn.disabled) {
+    if (this._newEventFormPresence) {
       const newEventForm = this._newEventController._newEventFormComponent;
       remove(newEventForm);
 
@@ -183,5 +278,60 @@ export default class TripController {
       // remove mark-up of list of days:
       remove(this._container);
     }
+  }
+
+  findPointController(id) {
+    for (const pointController of this._showedPointControllers) {
+      if (pointController._id === id) {
+        return pointController;
+      }
+    }
+    return null;
+  }
+
+  onBodyClickToHideWarning(editPointComponent, handler) {
+    editPointComponent.classList.remove(`error`);
+    document.body.removeEventListener(`click`, handler);
+  }
+
+  // show animation and warning border:
+  handleConnectionErrors(id) {
+
+    const pointController = this.findPointController(id);
+    const editPointComponent = pointController._editPointComponent.getElement();
+
+    // show warning border:
+    editPointComponent.classList.add(`error`);
+
+    // shake a form:
+    pointController.shake();
+
+    // unblock save and delete buttons:
+    const saveBtn = editPointComponent.querySelector(`.event__save-btn`);
+    saveBtn.disabled = false;
+    saveBtn.textContent = `Save`;
+    pointController._editPointComponent._externalData = Object.assign({}, DefaultData, {
+      saveButtonText: `Save`,
+    });
+
+    const deleteBtn = editPointComponent.querySelector(`.event__reset-btn`);
+    deleteBtn.disabled = false;
+    deleteBtn.textContent = `Delete`;
+    pointController._editPointComponent._externalData = Object.assign({}, DefaultData, {
+      deleteButtonText: `Delete`,
+    });
+
+    const onBodyClick = this.onBodyClickToHideWarning.bind(null, editPointComponent, this.onBodyClickToHideWarning);
+
+    document.body.addEventListener(`click`, onBodyClick);
+
+  }
+
+  hide() {
+    this._container.hide();
+  }
+
+  show() {
+    this._container.show();
   }
 }

@@ -18,6 +18,9 @@ const createNoEventsMarkUp = (activeFilterType) => {
     case FilterType.PAST:
       message = `There are no past events.`;
       break;
+    case FilterType.NOEVENTS:
+      message = `There are no events.`;
+      break;
   }
 
   return (

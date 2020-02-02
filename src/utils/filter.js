@@ -6,7 +6,7 @@ import {
 
 // get future or past events:
 
-const getFuturePoints = (points) => {
+export const getFuturePoints = (points) => {
 
   return points.filter((point) => {
 
@@ -19,7 +19,7 @@ const getFuturePoints = (points) => {
   });
 };
 
-const getPastPoints = (points) => {
+export const getPastPoints = (points) => {
 
   return points.filter((point) => {
 

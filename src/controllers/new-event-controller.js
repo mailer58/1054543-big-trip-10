@@ -2,9 +2,16 @@ import
 FormsCommonListeners from './../utils/forms-common-listeners.js';
 
 import {
-  NewEventFormComponent,
   getFormData,
-} from '../components/forms.js';
+  setData
+} from './../utils/forms-common-func.js';
+
+import NewEventFormComponent
+  from './../components/new-event-form.js';
+
+import {
+  toRAW
+} from './../utils/common.js';
 
 import {
   render,
@@ -14,8 +21,11 @@ import {
 
 import {
   DataChange,
-  ToggleButton
+  ToggleButton,
+  DefaultData
 } from './../const.js';
+
+const SHAKE_ANIMATION_TIMEOUT = 600;
 
 export default class NewEventController extends FormsCommonListeners {
   constructor(tripController, onDataChange) {
@@ -47,6 +57,8 @@ export default class NewEventController extends FormsCommonListeners {
     }
 
     // add listeners:
+    this._newEventFormComponent._subscribeOnEvents();
+
     this._newEventFormComponent.setEventListBtnClickHandler(super.onEventListBtnClick.bind(this));
 
     this._newEventFormComponent.setCancelBtnClickHandler(() => {
@@ -55,52 +67,40 @@ export default class NewEventController extends FormsCommonListeners {
 
     this._newEventFormComponent.setSubmitBtnHandler((evt) => {
       evt.preventDefault();
+
+      this._tripController._newEventFormPresence = false;
+
+      // disable save button:
+      const saveBtn = this._newEventFormComponent.getElement().querySelector(`.event__save-btn`);
+      saveBtn.disabled = true;
+
+      // get data of form:
       const formData = getFormData(this._newEventFormComponent);
-      const {
-        formStartTime,
-        formEndTime,
-        formDestination,
-        formEventType,
-        formIcon,
-        formDescription,
-        formOffers,
-        formFavorite
-      } = formData;
 
-      let {
-        formPrice
-      } = formData;
+      // get new id:
+      const newId = String(this._tripController._pointsModel.getPointsAll().length + 1);
 
-      const newId = this._tripController._pointsModel.getPointsAll().length + 1;
-      formPrice = formPrice ? formPrice : 0;
+      // get data for format of server:
+      const newEvent = toRAW(newId, formData);
+      newEvent[`is_favorite`] = false;
 
-      const newEvent = {
-        id: newId,
-        eventType: formEventType,
-        destination: formDestination,
-        eventIcon: formIcon,
-        startTime: formStartTime,
-        endTime: formEndTime,
-        price: formPrice,
-        photo: null,
-        description: formDescription,
-        offers: formOffers,
-        days: ``,
-        favorite: formFavorite,
-      };
-
-      this._closeNewEventForm();
+      // change a text of save button:
+      setData(this._newEventFormComponent, {
+        saveButtonText: `Saving...`,
+      }, formData);
 
       this._onDataChange(DataChange.ADD, null, newEvent);
     });
   }
 
   closeNewEventForm() {
+    this._tripController._newEventFormPresence = false;
+
     this.resetNewEventFormData();
 
-    remove(this._newEventFormComponent);
+    this._newEventFormComponent._externalData = DefaultData;
 
-    this._newEventFormComponent._subscribeOnEvents();
+    remove(this._newEventFormComponent);
 
     const newEventBtn = document.querySelector(`.trip-main__event-add-btn`);
     newEventBtn.disabled = false;
@@ -124,6 +124,11 @@ export default class NewEventController extends FormsCommonListeners {
     this._newEventFormComponent._eventType = null;
     this._newEventFormComponent._startTime = null;
     this._newEventFormComponent._endTime = null;
+    this._newEventFormComponent._offers = null;
+  }
+
+  shake() {
+    this._newEventFormComponent.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
   }
 
 }

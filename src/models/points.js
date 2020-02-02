@@ -9,8 +9,6 @@ export default class Points {
   constructor() {
     this._points = [];
     this._activeFilterType = FilterType.ALL;
-    this._filterChangeHandlers = [];
-    this._dataChangeHandlers = [];
   }
 
   getPointsAll() {
@@ -38,6 +36,7 @@ export default class Points {
 
   addPoint(point) {
     this._points = [].concat(point, this._points);
+    return true;
   }
 
   removePoint(id) {
