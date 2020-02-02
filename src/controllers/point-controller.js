@@ -35,7 +35,7 @@ import {
 } from './../utils/common.js';
 
 
-const debounce = require(`lodash.debounce`);
+import debounce from 'lodash.debounce';
 
 const DEBOUNCE_INTERVAL = 1000;
 
@@ -161,7 +161,7 @@ export default class PointController extends FormsCommonListeners {
       }
     }, DEBOUNCE_INTERVAL, {
       leading: true,
-      trainling: false
+      trailing: false
     }));
 
     this._editPointComponent.setEventListBtnClickHandler(super.onEventListBtnClick.bind(this));
