@@ -11,20 +11,18 @@ import {
 const filterTypes = Object.values(FilterType);
 
 const createFilterTemplate = () => {
-  let filtersMarkUp = [];
-  filtersMarkUp.push(`<form class="trip-filters" action="#" method="get">`);
-  for (const filter of filterTypes) {
-    const isChecked = filter === `everything` ? `checked` : ``;
-    if (filter !== FilterType.NOEVENTS) { // exclude no events from markup
-      filtersMarkUp.push(`<div class="trip-filters__filter">
+  return (`<form class="trip-filters" action="#" method="get">
+  ${filterTypes.map((filter) => {
+      const isChecked = filter === `everything` ? `checked` : ``;
+      if (filter !== FilterType.NOEVENTS) { // exclude no events from markup
+        return (`<div class="trip-filters__filter">
       <input id="filter-${filter}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${filter}" ${isChecked}>
       <label class="trip-filters__filter-label" data-filter-type="${filter}" for="filter-${filter}">${filter}</label>
     </div>`);
-    }
-  }
-  filtersMarkUp.push(`</form>`);
-  filtersMarkUp = filtersMarkUp.join(`\n`);
-  return filtersMarkUp;
+      }
+      return null;
+    }).join(`\n`)}
+</form>`);
 };
 
 export default class FilterComponent extends AbstractComponent {

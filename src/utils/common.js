@@ -1,5 +1,8 @@
 import {
-  MONTHS_MAP
+  MONTHS_MAP,
+  Transport,
+  Stops,
+  Case
 } from './../const.js';
 
 import moment from 'moment';
@@ -14,35 +17,31 @@ export {
 };
 
 const setCase = (str, action) => {
-  if (!str) {
-    return str;
+  if (action === Case.UPPER) {
+    return str[0].toUpperCase() + str.slice(1);
+  } else if (action === Case.LOWER) {
+    return str[0].toLowerCase() + str.slice(1);
   }
-  let outputString;
-  if (action === `toUpperCase`) {
-    outputString = str[0].toUpperCase() + str.slice(1);
-  } else if (action === `toLowerCase`) {
-    outputString = str[0].toLowerCase() + str.slice(1);
-  }
-  return outputString;
+  return null;
 };
 
 // get event type:
 const transformEventTypeText = (eventText) => {
   switch (eventText) {
-    case `Taxi`:
-    case `Bus`:
-    case `Train`:
-    case `Ship`:
-    case `Transport`:
-    case `Drive`:
-    case `Flight`:
+    case Transport.TAXI:
+    case Transport.BUS:
+    case Transport.TRAIN:
+    case Transport.SHIP:
+    case Transport.TRANSPORT:
+    case Transport.DRIVE:
+    case Transport.FLIGHT:
       eventText = eventText + ` to`;
       break;
-    case `Check-in`:
+    case Stops.CHECKIN:
       eventText = `Check into`;
       break;
-    case `Sightseeing`:
-    case `Restaurant`:
+    case Stops.SIGHTSEEING:
+    case Stops.RESTAURANT:
       eventText = eventText + ` at`;
       break;
   }
@@ -136,7 +135,7 @@ const renderTripInfo = (events) => {
 
 // sort events by time:
 const sortPointsOfRouteByTime = (events) => {
-  events.sort(function (a, b) {
+  events.sort((a, b) => {
     return a.startTime - b.startTime;
   });
   return events;

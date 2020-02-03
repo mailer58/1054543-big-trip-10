@@ -5,7 +5,8 @@ import moment from 'moment';
 import he from 'he';
 
 import {
-  SortType
+  SortType,
+  Case
 } from './../const.js';
 
 import {
@@ -29,22 +30,18 @@ const MARGIN_LEFT = `80px`;
 const createMarkUpForPointOfRoute = (point) => {
   const destination = he.encode(point.destination.name); // make data safe
 
-  const price = typeof point.price === `string` ? he.encode(point.price) : point.price;
+  const price = point.price;
 
-  let startTime = point.startTime;
-  startTime = typeof point.startTime === `string` ? he.encode(startTime) : startTime;
-  startTime = moment(point.startTime);
+  const startTime = moment(point.startTime);
   const startDateTime = startTime.format(`YYYY-MM-DDTHH:mm`);
   const startHoursMinutes = startTime.format(`HH:mm`);
 
-  let endTime = point.endTime;
-  endTime = typeof point.endTime === `string` ? he.encode(endTime) : endTime;
-  endTime = moment(point.endTime);
+  const endTime = moment(point.endTime);
   const endDateTime = endTime.format(`YYYY-MM-DDTHH:mm`);
   const endHoursMinutes = endTime.format(`HH:mm`);
 
   const icon = point.eventType;
-  const eventType = transformEventTypeText(setCase(point.eventType, `toUpperCase`));
+  const eventType = transformEventTypeText(setCase(point.eventType, Case.UPPER));
 
   return `<li class="trip-events__item">
   <div class="event">

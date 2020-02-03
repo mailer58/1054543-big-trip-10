@@ -8,7 +8,9 @@ import {
 } from '../utils/render.js';
 
 import {
-  FilterType
+  FilterType,
+  Transport,
+  Case
 }
   from './../const.js';
 
@@ -20,16 +22,6 @@ import {
 import Chart from 'chart.js';
 
 const MARGIN_LEFT = `170px`;
-
-const allTransport = [
-  `taxi`,
-  `bus`,
-  `train`,
-  `ship`,
-  `transport`,
-  `drive`,
-  `flight`
-];
 
 export default class Statistics extends AbstractSmartComponent {
   constructor(tripController) {
@@ -127,7 +119,7 @@ const computeExpenses = (points) => {
 
   let events = Array.from(typesOfEvents);
 
-  events = events.map((event) => setCase(event, `toUpperCase`));
+  events = events.map((event) => setCase(event, Case.UPPER));
 
   return [events, expenses];
 };
@@ -137,13 +129,16 @@ const computeTransport = (points) => {
   const transportSet = new Set();
 
   // get set of used transport:
-  allTransport.forEach((item) => {
-    points.forEach((point) => {
-      if (item === point.eventType) {
-        transportSet.add(item);
-      }
-    });
-  });
+  for (const item in Transport) {
+    if (Object.prototype.hasOwnProperty.call(Transport, item)) {
+      points.forEach((point) => {
+        const transportItem = setCase(Transport[item], Case.LOWER);
+        if (transportItem === point.eventType) {
+          transportSet.add(transportItem);
+        }
+      });
+    }
+  }
 
   let transport = Array.from(transportSet);
 
@@ -158,7 +153,7 @@ const computeTransport = (points) => {
     counters.push(counter);
   });
 
-  transport = transport.map((item) => setCase(item, `toUpperCase`));
+  transport = transport.map((item) => setCase(item, Case.UPPER));
 
   return [transport, counters];
 };
@@ -170,7 +165,7 @@ const computeTime = (points) => {
     const startTime = moment(point.startTime);
     const endTime = moment(point.endTime);
     const diff = endTime.diff(startTime, `hours`);
-    const eventInfo = transformEventTypeText(setCase(point.eventType, `toUpperCase`)) + ` ` + point.destination.name;
+    const eventInfo = transformEventTypeText(setCase(point.eventType, Case.UPPER)) + ` ` + point.destination.name;
     eventsInfo.push(eventInfo);
     hours.push(diff);
   });

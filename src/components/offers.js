@@ -9,21 +9,21 @@ export default class OffersComponent extends AbstractComponent {
   }
 
   getTemplate() {
-    return createOffersMarkUp(this._offers);
+    return createOffersMarkup(this._offers);
   }
 }
 
 // create mark-up for offers in list of events:
-const createOffersMarkUp = (offers) => {
-  const offersMarkUp = [];
-  offersMarkUp.push(`<ul class="event__selected-offers">`);
+const createOffersMarkup = (offers) => {
+  const elementsOfMarkup = [];
+  elementsOfMarkup.push(`<ul class="event__selected-offers">`);
   const checkedOffers = offers.filter((offer) => offer.isChecked);
   if (checkedOffers.length > 0) {
     let i = 0;
     for (const offer of checkedOffers) {
       i++;
       if (i <= MAX_OFFERS_NUMBER) {
-        offersMarkUp.push(
+        elementsOfMarkup.push(
             `<li class="event__offer">
          <span class="event__offer-title">${offer.title}</span>
           +
@@ -33,6 +33,6 @@ const createOffersMarkUp = (offers) => {
       }
     }
   }
-  offersMarkUp.push(`</ul>`);
-  return offersMarkUp.join(`\n`);
+  elementsOfMarkup.push(`</ul>`);
+  return elementsOfMarkup.join(`\n`);
 };

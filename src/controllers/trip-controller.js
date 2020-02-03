@@ -30,7 +30,7 @@ import {
   DataChange,
   ToggleButton,
   SortType,
-  DefaultData
+  ButtonsText
 } from './../const.js';
 
 export default class TripController {
@@ -235,8 +235,8 @@ export default class TripController {
             const saveBtn = newEventFormComponent.querySelector(`.event__save-btn`);
             saveBtn.disabled = false;
             saveBtn.textContent = `Save`;
-            this._newEventController._newEventFormComponent._externalData = Object.assign({}, DefaultData, {
-              saveButtonText: `Save`,
+            this._newEventController._newEventFormComponent._externalData = Object.assign({}, ButtonsText, {
+              SAVE: `Save`,
             });
 
           });
@@ -310,15 +310,15 @@ export default class TripController {
     const saveBtn = editPointComponent.querySelector(`.event__save-btn`);
     saveBtn.disabled = false;
     saveBtn.textContent = `Save`;
-    pointController._editPointComponent._externalData = Object.assign({}, DefaultData, {
-      saveButtonText: `Save`,
+    pointController._editPointComponent._externalData = Object.assign({}, ButtonsText, {
+      SAVE: `Save`,
     });
 
     const deleteBtn = editPointComponent.querySelector(`.event__reset-btn`);
     deleteBtn.disabled = false;
     deleteBtn.textContent = `Delete`;
-    pointController._editPointComponent._externalData = Object.assign({}, DefaultData, {
-      deleteButtonText: `Delete`,
+    pointController._editPointComponent._externalData = Object.assign({}, ButtonsText, {
+      DELETE: `Delete`,
     });
 
     const onBodyClick = this.onBodyClickToHideWarning.bind(null, editPointComponent, this.onBodyClickToHideWarning);

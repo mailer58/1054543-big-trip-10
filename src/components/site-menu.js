@@ -8,19 +8,14 @@ export const MenuItem = {
 };
 
 const createSiteMenuTemplate = () => {
-  let siteMenuMarkUp = [];
   let id;
-  siteMenuMarkUp.push(`<nav class="trip-controls__trip-tabs  trip-tabs">`);
-
-  for (const item of itemsOfSiteMenu) {
-    const activeBtn = item === `Table` ? ` ` + `trip-tabs__btn--active` : ``;
-    id = item === `Table` ? `table` : `stats`;
-    siteMenuMarkUp.push(`<a id="${id}" class="trip-tabs__btn${activeBtn}" href="#">${item}</a>`);
-  }
-
-  siteMenuMarkUp.push(`</nav>`);
-  siteMenuMarkUp = siteMenuMarkUp.join(`\n`);
-  return siteMenuMarkUp;
+  return (`<nav class="trip-controls__trip-tabs  trip-tabs">
+  ${itemsOfSiteMenu.map((item) => {
+      const activeBtn = item === `Table` ? ` ` + `trip-tabs__btn--active` : ``;
+      id = item === `Table` ? `table` : `stats`;
+      return `<a id="${id}" class="trip-tabs__btn${activeBtn}" href="#">${item}</a>`;
+    }).join(`\n`)}
+</nav>`);
 };
 
 export default class SiteMenuComponent extends AbstractComponent {

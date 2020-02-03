@@ -39,6 +39,11 @@ import debounce from 'lodash.debounce';
 
 const DEBOUNCE_INTERVAL = 1000;
 
+const Escape = {
+  ESCAPE: `Escape`,
+  ESC: `Esc`
+};
+
 const Mode = {
   DEFAULT: `default`,
   EDIT: `edit`,
@@ -104,7 +109,7 @@ export default class PointController extends FormsCommonListeners {
 
       // change a text of save button:
       setData(this._editPointComponent, {
-        saveButtonText: `Saving...`,
+        SAVE: `Saving...`,
       }, formData);
 
       // block save and delete buttons:
@@ -122,7 +127,7 @@ export default class PointController extends FormsCommonListeners {
 
       // change a text of save button:
       setData(this._editPointComponent, {
-        deleteButtonText: `Deleting...`,
+        DELETE: `Deleting...`,
       }, formData);
 
       // block save and delete buttons:
@@ -203,7 +208,7 @@ export default class PointController extends FormsCommonListeners {
   }
 
   _onEscKeyDownCloseEditForm(evt) {
-    const isEscKey = evt.key === `Escape` || evt.key === `Esc`;
+    const isEscKey = evt.key === Escape.ESCAPE || evt.key === Escape.ESC;
     if (isEscKey) {
       const eventTypeList = document.getElementsByClassName(`event__type-list`)[0];
       const eventTypeToggle = document.getElementById(`event-type-toggle-1`);

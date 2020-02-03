@@ -8,11 +8,11 @@ import {
   applyFlatpickr,
   createPhotoMarkUp,
   checkDestinationValidity,
-  isValidTimeDifference
+  onInputChangeCheckTime
 } from './../utils/forms-common-func.js';
 
 import {
-  DefaultData,
+  ButtonsText,
 } from './../const.js';
 
 import {
@@ -40,20 +40,20 @@ export default class NewEventFormComponent extends AbstractSmartComponent {
 
     this._isSaveBtnBlocked = true;
 
-    this._externalData = DefaultData;
+    this._externalData = ButtonsText;
 
     this._flatpickrStart = null;
     this._flatpickrEnd = null;
 
     this._onDestinationInputChange = onDestinationInputChange.bind(null, this);
-    this._isValidTimeDifference = isValidTimeDifference.bind(null, this);
+    this._onInputChangeCheckTime = onInputChangeCheckTime.bind(null, this);
 
     this._subscribeOnEvents();
     applyFlatpickr(this);
   }
 
   getTemplate() {
-    return createNewEventFormMarkUp({
+    return createNewEventFormMarkup({
       formDestination: this._destination,
       formPrice: this._price,
       formIcon: this._icon,
@@ -96,9 +96,9 @@ export default class NewEventFormComponent extends AbstractSmartComponent {
 
     // set listeners for inputs of time:
     const startTimeInput = this.getElement().querySelector(`#event-start-time-1`);
-    startTimeInput.addEventListener(`change`, this._isValidTimeDifference);
+    startTimeInput.addEventListener(`change`, this._onInputChangeCheckTime);
     const endTimeInput = this.getElement().querySelector(`#event-end-time-1`);
-    endTimeInput.addEventListener(`change`, this._isValidTimeDifference);
+    endTimeInput.addEventListener(`change`, this._onInputChangeCheckTime);
 
   }
 
@@ -130,7 +130,7 @@ export default class NewEventFormComponent extends AbstractSmartComponent {
 
 }
 
-const createNewEventFormMarkUp = (formData = {}) => {
+const createNewEventFormMarkup = (formData = {}) => {
   const {
     formDestination,
     formPrice,
@@ -173,19 +173,19 @@ const createNewEventFormMarkUp = (formData = {}) => {
 
   const destinationName = formDestination ? formDestination.name : ``;
 
-  const isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.saveButtonText === `Saving...` || isSaveBtnBlocked;
+  const isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.SAVE === `Saving...` || isSaveBtnBlocked;
 
   let isInputError = !checkDestinationValidity(destinationName) && destinationName.length > 0;
 
   isInputError = isInputError ? `error` : ``;
 
-  const saveButtonText = externalData.saveButtonText;
+  const SAVE = externalData.SAVE;
 
   const price = formPrice || formPrice === 0 ? formPrice : ``;
 
-  let newEventFormMarkUp = [];
+  const elementsOfMarkup = [];
 
-  newEventFormMarkUp.push(`<form class="trip-events__item  event  event--edit" action="#" method="post">
+  elementsOfMarkup.push(`<form class="trip-events__item  event  event--edit" action="#" method="post">
          <header class="event__header">
            <div class="event__type-wrapper">
              <label class="event__type  event__type-btn" for="event-type-toggle-1">
@@ -194,9 +194,9 @@ const createNewEventFormMarkUp = (formData = {}) => {
              </label>
              <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">`);
   // generate event list:
-  newEventFormMarkUp.push(createEventsListMarkUp());
+  elementsOfMarkup.push(createEventsListMarkUp());
 
-  newEventFormMarkUp.push(`<div class="event__field-group  event__field-group--destination">
+  elementsOfMarkup.push(`<div class="event__field-group  event__field-group--destination">
     <label class="event__label  event__type-output" for="event-destination-1">
     ${eventType}
     </label>
@@ -204,9 +204,9 @@ const createNewEventFormMarkUp = (formData = {}) => {
     <datalist id="destination-list-1">`);
 
   // generate list of destinations:
-  newEventFormMarkUp.push(generateMarkUpForListOfDestinations(destinationsMap));
+  elementsOfMarkup.push(generateMarkUpForListOfDestinations(destinationsMap));
 
-  newEventFormMarkUp.push(`</datalist>
+  elementsOfMarkup.push(`</datalist>
            </div>
     
            <div class="event__field-group  event__field-group--time">
@@ -229,19 +229,19 @@ const createNewEventFormMarkUp = (formData = {}) => {
              <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
            </div>
     
-           <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>${saveButtonText}</button>
+           <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>${SAVE}</button>
            <button class="event__reset-btn" type="reset">Cancel</button>
          </header>`);
   if (offers.length > 0 || description) {
-    newEventFormMarkUp.push(`<section class="event__details">`);
+    elementsOfMarkup.push(`<section class="event__details">`);
     if (offers.length > 0) {
-      newEventFormMarkUp.push(
+      elementsOfMarkup.push(
           `<section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
     
       <div class="event__available-offers">`);
       for (const offer of offers) {
-        newEventFormMarkUp.push(
+        elementsOfMarkup.push(
             `<div class="event__offer-selector">
         <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.title}-1" type="checkbox" name="event-offer-${offer.title}">
         <label class="event__offer-label" for="event-offer-${offer.title}-1">
@@ -251,24 +251,24 @@ const createNewEventFormMarkUp = (formData = {}) => {
         </label>
       </div>`);
       }
-      newEventFormMarkUp.push(`</div>
+      elementsOfMarkup.push(`</div>
       </section>`);
     }
     if (description) {
-      newEventFormMarkUp.push(
+      elementsOfMarkup.push(
           `<section class="event__section  event__section--destination">
                    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
                    <p class="event__destination-description">${description}</p>`
       );
     }
     if (photos && photos.length > 0) {
-      newEventFormMarkUp.push(createPhotoMarkUp(photos));
+      elementsOfMarkup.push(createPhotoMarkUp(photos));
     }
-    newEventFormMarkUp.push(`</section>
+    elementsOfMarkup.push(`</section>
       </section>`);
   }
 
-  newEventFormMarkUp.push(`</form>`);
-  newEventFormMarkUp = newEventFormMarkUp.join(`\n`);
-  return newEventFormMarkUp;
+  elementsOfMarkup.push(`</form>`);
+
+  return elementsOfMarkup.join(`\n`);
 };

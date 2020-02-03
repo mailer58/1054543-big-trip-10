@@ -22,7 +22,7 @@ import {
 import {
   DataChange,
   ToggleButton,
-  DefaultData
+  ButtonsText
 } from './../const.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
@@ -86,7 +86,7 @@ export default class NewEventController extends FormsCommonListeners {
 
       // change a text of save button:
       setData(this._newEventFormComponent, {
-        saveButtonText: `Saving...`,
+        SAVE: `Saving...`,
       }, formData);
 
       this._onDataChange(DataChange.ADD, null, newEvent);
@@ -98,7 +98,7 @@ export default class NewEventController extends FormsCommonListeners {
 
     this.resetNewEventFormData();
 
-    this._newEventFormComponent._externalData = DefaultData;
+    this._newEventFormComponent._externalData = ButtonsText;
 
     remove(this._newEventFormComponent);
 

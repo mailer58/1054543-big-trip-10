@@ -6,11 +6,12 @@ import {
   applyFlatpickr,
   createPhotoMarkUp,
   checkDestinationValidity,
-  isValidTimeDifference
+  onInputChangeCheckTime
 } from './../utils/forms-common-func.js';
 
 import {
-  DefaultData
+  ButtonsText,
+  Case
 } from './../const.js';
 
 import {
@@ -39,11 +40,11 @@ const createEditEventFormMarkUp = (event, options = {}) => {
   } = options;
 
   // transform time from html to design format:
-  let editFormMarkup = [];
+  const elementsOfMarkup = [];
   let favorite = event.favorite;
   favorite = favorite ? `checked` : ``;
 
-  const eventType = setCase(formIcon || event.eventType, `toLowerCase`);
+  const eventType = setCase(formIcon || event.eventType, Case.LOWER);
 
   const offers = generateOffersMarkUpInEditForm(event.offers, formOffers, eventType);
 
@@ -54,15 +55,15 @@ const createEditEventFormMarkUp = (event, options = {}) => {
   const description = formDestination ? formDestination.description : event.destination.description;
   const photos = formDestination ? formDestination.pictures : event.destination.pictures;
 
-  const isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.saveButtonText === `Saving...` || isSaveBtnBlocked;
+  const isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.SAVE === `Saving...` || isSaveBtnBlocked;
   const isInputError = !checkDestinationValidity(destinationName) && destinationName.length > 0;
 
-  const deleteButtonText = externalData.deleteButtonText;
-  const saveButtonText = externalData.saveButtonText;
+  const DELETE = externalData.DELETE;
+  const SAVE = externalData.SAVE;
 
   const price = formPrice || formPrice === 0 ? formPrice : event.price;
 
-  editFormMarkup.push(
+  elementsOfMarkup.push(
       `<form class="event  event--edit" action="#" method="post">
            <header class="event__header">
              <div class="event__type-wrapper">
@@ -71,16 +72,16 @@ const createEditEventFormMarkUp = (event, options = {}) => {
                  <img class="event__type-icon" width="17" height="17" src="img/icons/${eventType}.png" alt="Event type icon">
                </label>
                <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">`);
-  editFormMarkup.push(createEventsListMarkUp());
-  editFormMarkup.push(
+  elementsOfMarkup.push(createEventsListMarkUp());
+  elementsOfMarkup.push(
       `</div>
   
              <div class="event__field-group  event__field-group--destination">
-               <label class="event__label  event__type-output" for="event-destination-1">${formEventType || transformEventTypeText(setCase(event.eventType, `toUpperCase`))}</label>
+               <label class="event__label  event__type-output" for="event-destination-1">${formEventType || transformEventTypeText(setCase(event.eventType, Case.UPPER))}</label>
                <input class="event__input  event__input--destination ${isInputError ? `error` : ``}" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1">
                <datalist id="destination-list-1">`);
-  editFormMarkup.push(generateMarkUpForListOfDestinations(destinationsMap));
-  editFormMarkup.push(
+  elementsOfMarkup.push(generateMarkUpForListOfDestinations(destinationsMap));
+  elementsOfMarkup.push(
       `</datalist>
              </div>
   
@@ -104,8 +105,8 @@ const createEditEventFormMarkUp = (event, options = {}) => {
                <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
              </div>
   
-             <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>${saveButtonText}</button>
-             <button class="event__reset-btn" type="reset">${deleteButtonText}</button>
+             <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>${SAVE}</button>
+             <button class="event__reset-btn" type="reset">${DELETE}</button>
   
              <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${favorite}>
              <label class="event__favorite-btn" for="event-favorite-1">
@@ -120,11 +121,11 @@ const createEditEventFormMarkUp = (event, options = {}) => {
              </button>
            </header>`);
   if (offers || description) {
-    editFormMarkup.push(`<section class="event__details">`);
+    elementsOfMarkup.push(`<section class="event__details">`);
   }
-  editFormMarkup.push(`${offers}`);
+  elementsOfMarkup.push(`${offers}`);
   if (description) {
-    editFormMarkup.push(
+    elementsOfMarkup.push(
         `<section class="event__section  event__section--destination">
                <h3 class="event__section-title  event__section-title--destination">Destination</h3>
                <p class="event__destination-description">${description}</p>`
@@ -132,16 +133,15 @@ const createEditEventFormMarkUp = (event, options = {}) => {
   }
 
   if (photos && photos.length > 0) {
-    editFormMarkup.push(createPhotoMarkUp(photos));
+    elementsOfMarkup.push(createPhotoMarkUp(photos));
   }
 
-  editFormMarkup.push(`</section>`);
+  elementsOfMarkup.push(`</section>`);
   if (offers || description) {
-    editFormMarkup.push(`</section>`);
+    elementsOfMarkup.push(`</section>`);
   }
-  editFormMarkup.push(`</form>`);
-  editFormMarkup = editFormMarkup.join(`\n`);
-  return editFormMarkup;
+  elementsOfMarkup.push(`</form>`);
+  return elementsOfMarkup.join(`\n`);
 };
 
 export default class EditEventFormComponent extends AbstractSmartComponent {
@@ -160,7 +160,7 @@ export default class EditEventFormComponent extends AbstractSmartComponent {
 
     this._isSaveBtnBlocked = false;
 
-    this._externalData = DefaultData;
+    this._externalData = ButtonsText;
 
     this._flatpickrStart = null;
     this._flatpickrEnd = null;
@@ -171,7 +171,7 @@ export default class EditEventFormComponent extends AbstractSmartComponent {
     this._setDeleteBtnHandler = null;
 
     this._onDestinationInputChange = onDestinationInputChange.bind(null, this);
-    this._isValidTimeDifference = isValidTimeDifference.bind(null, this);
+    this._onInputChangeCheckTime = onInputChangeCheckTime.bind(null, this);
 
 
     this._subscribeOnEvents();
@@ -236,9 +236,9 @@ export default class EditEventFormComponent extends AbstractSmartComponent {
 
     // set listeners for inputs of time:
     const startTimeInput = this.getElement().querySelector(`#event-start-time-1`);
-    startTimeInput.addEventListener(`change`, this._isValidTimeDifference);
+    startTimeInput.addEventListener(`change`, this._onInputChangeCheckTime);
     const endTimeInput = this.getElement().querySelector(`#event-end-time-1`);
-    endTimeInput.addEventListener(`change`, this._isValidTimeDifference);
+    endTimeInput.addEventListener(`change`, this._onInputChangeCheckTime);
 
   }
 

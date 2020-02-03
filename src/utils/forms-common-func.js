@@ -20,24 +20,11 @@ import {
 } from './../utils/common.js';
 
 import {
-  DefaultData
+  ButtonsText,
+  Transport,
+  Stops,
+  Case
 } from './../const.js';
-
-const transfer = [
-  `taxi`,
-  `bus`,
-  `train`,
-  `ship`,
-  `transport`,
-  `drive`,
-  `flight`
-];
-
-const activity = [
-  `check-in`,
-  `sightseeing`,
-  `restaurant`
-];
 
 export const onDestinationInputChange = (element) => {
   // hide warning border:
@@ -55,10 +42,10 @@ export const onDestinationInputChange = (element) => {
   // check validity of destination:
   const isValidDestination = checkDestinationValidity(destinationInput.value);
 
-  saveBtn.disabled = !isValidDestination || !isValidTimeDifference(element);
+  saveBtn.disabled = !isValidDestination || !onInputChangeCheckTime(element);
 
   let eventDetailsSection = element.getElement().querySelector(`.event__details`);
-  let offersSection = element.getElement().querySelector(`.event__section--offers`);
+  const offersSection = element.getElement().querySelector(`.event__section--offers`);
 
 
   element._destination = {
@@ -68,7 +55,6 @@ export const onDestinationInputChange = (element) => {
   // change form:
   if (isValidDestination && destinationInput.value.length > 0) {
 
-    eventDetailsSection = element.getElement().querySelector(`.event__details`);
     const descriptionText = element.getElement().querySelector(`.event__destination-description`);
     if (descriptionText) {
       descriptionText.textContent = destinationsMap.get(destinationInput.value);
@@ -76,8 +62,6 @@ export const onDestinationInputChange = (element) => {
       const eventDetailsElement = createElement(`<section class ="event__details"></section>`);
       render(formHeader, eventDetailsElement, RenderPosition.AFTER);
     }
-
-    offersSection = element.getElement().querySelector(`.event__section--offers`);
 
     if (offersSection) {
       createDestinationMarkup(element, offersSection, RenderPosition.AFTER);
@@ -88,7 +72,6 @@ export const onDestinationInputChange = (element) => {
 
   } else { // remove a description if a destination is invalid:
     if (!destinationInput.classList.contains(`error`)) {
-      offersSection = element.getElement().querySelector(`.event__section--offers`);
 
       if (offersSection) { // keep offers section:
         const destinationSection = element.getElement().querySelector(`.event__section--destination`);
@@ -97,7 +80,6 @@ export const onDestinationInputChange = (element) => {
         }
 
       } else { // if there is no offers section remove all:
-        eventDetailsSection = element.getElement().querySelector(`.event__details`);
         if (eventDetailsSection) {
           eventDetailsSection.remove();
         }
@@ -118,48 +100,52 @@ export const onDestinationInputChange = (element) => {
 };
 
 export const createEventsListMarkUp = () => {
-  let eventsListMarkUp = [];
+  const elementsOfMarkup = [];
 
-  eventsListMarkUp.push(`<div class="event__type-list">
+  elementsOfMarkup.push(`<div class="event__type-list">
   <fieldset class="event__type-group">
     <legend class="visually-hidden">Transfer</legend>`);
 
-  // add transfer events:
-  for (const item of transfer) {
-    eventsListMarkUp.push(`<div class="event__type-item">
-      <input id="event-type-${item}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${item}">
-      <label class="event__type-label  event__type-label--${item}" for="event-type-${item}-1">${setCase(item, `toUpperCase`)}</label>
+  // add events of transport:
+  for (const item in Transport) {
+    if (Object.prototype.hasOwnProperty.call(Transport, item)) {
+      const transport = setCase(Transport[item], Case.LOWER);
+      elementsOfMarkup.push(`<div class="event__type-item">
+      <input id="event-type-${transport}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${transport}">
+      <label class="event__type-label  event__type-label--${transport}" for="event-type-${transport}-1">${Transport[item]}</label>
     </div>`);
+    }
   }
-  eventsListMarkUp.push(`</fieldset>
+  elementsOfMarkup.push(`</fieldset>
   <fieldset class="event__type-group">
     <legend class="visually-hidden">Activity</legend>`);
 
   // add activity events:
-  for (const item of activity) {
-    eventsListMarkUp.push(`<div class="event__type-item">
-   <input id="event-type-${item}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${item}">
-   <label class="event__type-label  event__type-label--${item}" for="event-type-${item}-1">${setCase(item, `toUpperCase`)}</label>
+  for (const item in Stops) {
+    if (Object.prototype.hasOwnProperty.call(Stops, item)) {
+      const stop = setCase(Stops[item], Case.LOWER);
+      elementsOfMarkup.push(`<div class="event__type-item">
+   <input id="event-type-${stop}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${stop}">
+   <label class="event__type-label  event__type-label--${stop}" for="event-type-${stop}-1">${Stops[item]}</label>
   </div>`);
+    }
   }
-  eventsListMarkUp.push(`</fieldset>
+  elementsOfMarkup.push(`</fieldset>
   </div>
   </div>`);
 
-  eventsListMarkUp = eventsListMarkUp.join(`\n`);
-  return eventsListMarkUp;
+  return elementsOfMarkup.join(`\n`);
 };
 
 export const generateMarkUpForListOfDestinations = (map) => {
   // generate list of destinations:
-  let listOfDestinationsMarkUp = [];
+  const elementsOfMarkup = [];
   if (map) {
     for (const item of map.keys()) {
-      listOfDestinationsMarkUp.push(`<option value="${item}"></option>`);
+      elementsOfMarkup.push(`<option value="${item}"></option>`);
     }
   }
-  listOfDestinationsMarkUp = listOfDestinationsMarkUp.join(`\n`);
-  return listOfDestinationsMarkUp;
+  return elementsOfMarkup.join(`\n`);
 };
 
 export const setOptionsHandlers = (element) => {
@@ -169,7 +155,7 @@ export const setOptionsHandlers = (element) => {
     item.addEventListener(`click`, (evt) => {
       // change type of event and offers:
       element._icon = getEventTypeIcon(evt);
-      element._eventType = transformEventTypeText(setCase(element._icon, `toUpperCase`));
+      element._eventType = transformEventTypeText(setCase(element._icon, Case.UPPER));
       const offers = offersMap.get(element._icon);
       element._offers = offers ? offers : `noneInForm`;
       element._price = parseInt(element.getElement().querySelector(`#event-price-1`).value, 10);
@@ -294,13 +280,13 @@ const createDestinationMarkup = (element, container, renderPosition) => {
     }
   });
 
-  let photoMarkup;
+  let elementsOfMarkup;
   if (photos.length > 0) {
-    photoMarkup = createPhotoMarkUp(photos);
+    elementsOfMarkup = createPhotoMarkUp(photos);
   }
 
-  photoMarkup = createElement(photoMarkup);
-  render(destinationSection, photoMarkup, RenderPosition.APPEND);
+  elementsOfMarkup = createElement(elementsOfMarkup);
+  render(destinationSection, elementsOfMarkup, RenderPosition.APPEND);
 
   element._destination = {
     name: destinationInput.value,
@@ -311,20 +297,14 @@ const createDestinationMarkup = (element, container, renderPosition) => {
 };
 
 export const createPhotoMarkUp = (photos) => {
-  let photoMarkup = [];
-  photoMarkup.push(
-      `<div class="event__photos-container">
-      <div class="event__photos-tape">`);
-  for (const picture of photos) {
-    photoMarkup.push(
-        `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`);
-  }
-  photoMarkup.push(`</div>
+  return (
+    `<div class="event__photos-container">
+      <div class="event__photos-tape">
+      ${photos.map((picture) => {
+      return `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`;
+    }).join(`\n`)}
+  </div>
     </div>`);
-
-  photoMarkup = photoMarkup.join(`\n`);
-
-  return photoMarkup;
 };
 
 export const getFormData = (form) => {
@@ -398,7 +378,7 @@ export const getFormData = (form) => {
 
 
 export const setData = (element, data, formData = {}) => {
-  element._externalData = Object.assign({}, DefaultData, data);
+  element._externalData = Object.assign({}, ButtonsText, data);
   const {
     formStartTime,
     formEndTime,
@@ -412,7 +392,7 @@ export const setData = (element, data, formData = {}) => {
   element._destination = formDestination;
   element._offers = formOffers;
   element._price = formPrice;
-  element._eventType = transformEventTypeText(setCase(formEventType, `toUpperCase`));
+  element._eventType = transformEventTypeText(setCase(formEventType, Case.UPPER));
   element._favorite = formFavorite;
   element._startTime = formStartTime;
   element._endTime = formEndTime;
@@ -420,7 +400,7 @@ export const setData = (element, data, formData = {}) => {
   element.rerender();
 };
 
-export const isValidTimeDifference = (element) => {
+export const onInputChangeCheckTime = (element) => {
   const saveBtn = element.getElement().querySelector(`.event__save-btn`);
 
   const timeFormat = `YY-MM-DD HH:mm`;

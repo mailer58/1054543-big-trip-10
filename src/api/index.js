@@ -4,8 +4,13 @@ import {
   Method
 } from './../const.js';
 
+const Response = {
+  SUCCESS: 200,
+  REDIRECTION: 300
+};
+
 const checkStatus = (response) => {
-  if (response.status >= 200 && response.status < 300) {
+  if (response.status >= Response.SUCCESS && response.status < Response.REDIRECTION) {
     return response;
   }
   throw new Error(`${response.status}: ${response.statusText}`);

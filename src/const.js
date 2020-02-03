@@ -44,9 +44,29 @@ export const Method = {
   DELETE: `DELETE`
 };
 
+export const ButtonsText = {
+  SAVE: `Save`,
+  DELETE: `Delete`,
+};
 
-export const DefaultData = {
-  saveButtonText: `Save`,
-  deleteButtonText: `Delete`,
+export const Transport = {
+  TAXI: `Taxi`,
+  BUS: `Bus`,
+  TRAIN: `Train`,
+  SHIP: `Ship`,
+  TRANSPORT: `Transport`,
+  DRIVE: `Drive`,
+  FLIGHT: `Flight`,
+};
+
+export const Stops = {
+  CHECKIN: `Check-in`,
+  SIGHTSEEING: `Sightseeing`,
+  RESTAURANT: `Restaurant`,
+};
+
+export const Case = {
+  UPPER: `toUpperCase`,
+  LOWER: `toLowerCase`
 };
 
