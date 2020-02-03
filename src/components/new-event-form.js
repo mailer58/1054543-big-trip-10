@@ -40,7 +40,7 @@ export default class NewEventFormComponent extends AbstractSmartComponent {
 
     this._isSaveBtnBlocked = true;
 
-    this._externalData = ButtonsText;
+    this._buttonsText = ButtonsText;
 
     this._flatpickrStart = null;
     this._flatpickrEnd = null;
@@ -61,7 +61,7 @@ export default class NewEventFormComponent extends AbstractSmartComponent {
       formStartTime: this._startTime,
       formEndTime: this._endTime,
       formOffers: this._offers,
-      externalData: this._externalData,
+      buttonsText: this._buttonsText,
       isSaveBtnBlocked: this._isSaveBtnBlocked
     });
   }
@@ -139,7 +139,7 @@ const createNewEventFormMarkup = (formData = {}) => {
     formStartTime,
     formEndTime,
     formOffers,
-    externalData,
+    buttonsText,
     isSaveBtnBlocked
   } = formData;
 
@@ -173,13 +173,13 @@ const createNewEventFormMarkup = (formData = {}) => {
 
   const destinationName = formDestination ? formDestination.name : ``;
 
-  const isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.SAVE === `Saving...` || isSaveBtnBlocked;
+  const isBlockSaveButton = !checkDestinationValidity(destinationName) || buttonsText.SAVE === `Saving...` || isSaveBtnBlocked;
 
   let isInputError = !checkDestinationValidity(destinationName) && destinationName.length > 0;
 
   isInputError = isInputError ? `error` : ``;
 
-  const SAVE = externalData.SAVE;
+  const saveButtonText = buttonsText.SAVE;
 
   const price = formPrice || formPrice === 0 ? formPrice : ``;
 
@@ -229,7 +229,7 @@ const createNewEventFormMarkup = (formData = {}) => {
              <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
            </div>
     
-           <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>${SAVE}</button>
+           <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>${saveButtonText}</button>
            <button class="event__reset-btn" type="reset">Cancel</button>
          </header>`);
   if (offers.length > 0 || description) {

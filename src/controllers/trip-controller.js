@@ -235,7 +235,7 @@ export default class TripController {
             const saveBtn = newEventFormComponent.querySelector(`.event__save-btn`);
             saveBtn.disabled = false;
             saveBtn.textContent = `Save`;
-            this._newEventController._newEventFormComponent._externalData = Object.assign({}, ButtonsText, {
+            this._newEventController._newEventFormComponent._buttonsText = Object.assign({}, ButtonsText, {
               SAVE: `Save`,
             });
 
@@ -310,14 +310,14 @@ export default class TripController {
     const saveBtn = editPointComponent.querySelector(`.event__save-btn`);
     saveBtn.disabled = false;
     saveBtn.textContent = `Save`;
-    pointController._editPointComponent._externalData = Object.assign({}, ButtonsText, {
+    pointController._editPointComponent._buttonsText = Object.assign({}, ButtonsText, {
       SAVE: `Save`,
     });
 
     const deleteBtn = editPointComponent.querySelector(`.event__reset-btn`);
     deleteBtn.disabled = false;
     deleteBtn.textContent = `Delete`;
-    pointController._editPointComponent._externalData = Object.assign({}, ButtonsText, {
+    pointController._editPointComponent._buttonsText = Object.assign({}, ButtonsText, {
       DELETE: `Delete`,
     });
 

@@ -35,7 +35,7 @@ const createEditEventFormMarkUp = (event, options = {}) => {
     formEventType,
     formStartTime,
     formEndTime,
-    externalData,
+    buttonsText,
     isSaveBtnBlocked
   } = options;
 
@@ -55,11 +55,11 @@ const createEditEventFormMarkUp = (event, options = {}) => {
   const description = formDestination ? formDestination.description : event.destination.description;
   const photos = formDestination ? formDestination.pictures : event.destination.pictures;
 
-  const isBlockSaveButton = !checkDestinationValidity(destinationName) || externalData.SAVE === `Saving...` || isSaveBtnBlocked;
+  const isBlockSaveButton = !checkDestinationValidity(destinationName) || buttonsText.SAVE === `Saving...` || isSaveBtnBlocked;
   const isInputError = !checkDestinationValidity(destinationName) && destinationName.length > 0;
 
-  const DELETE = externalData.DELETE;
-  const SAVE = externalData.SAVE;
+  const deleteButtonText = buttonsText.DELETE;
+  const saveButtonText = buttonsText.SAVE;
 
   const price = formPrice || formPrice === 0 ? formPrice : event.price;
 
@@ -105,8 +105,8 @@ const createEditEventFormMarkUp = (event, options = {}) => {
                <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
              </div>
   
-             <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>${SAVE}</button>
-             <button class="event__reset-btn" type="reset">${DELETE}</button>
+             <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlockSaveButton ? `disabled` : ``}>${saveButtonText}</button>
+             <button class="event__reset-btn" type="reset">${deleteButtonText}</button>
   
              <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${favorite}>
              <label class="event__favorite-btn" for="event-favorite-1">
@@ -160,7 +160,7 @@ export default class EditEventFormComponent extends AbstractSmartComponent {
 
     this._isSaveBtnBlocked = false;
 
-    this._externalData = ButtonsText;
+    this._buttonsText = ButtonsText;
 
     this._flatpickrStart = null;
     this._flatpickrEnd = null;
@@ -189,7 +189,7 @@ export default class EditEventFormComponent extends AbstractSmartComponent {
       formEventType: this._eventType,
       formStartTime: this._startTime,
       formEndTime: this._endTime,
-      externalData: this._externalData,
+      buttonsText: this._buttonsText,
       isSaveBtnBlocked: this._isSaveBtnBlocked
     });
   }

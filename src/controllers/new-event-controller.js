@@ -98,7 +98,7 @@ export default class NewEventController extends FormsCommonListeners {
 
     this.resetNewEventFormData();
 
-    this._newEventFormComponent._externalData = ButtonsText;
+    this._newEventFormComponent._buttonsText = ButtonsText;
 
     remove(this._newEventFormComponent);
 

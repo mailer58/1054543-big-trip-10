@@ -378,7 +378,7 @@ export const getFormData = (form) => {
 
 
 export const setData = (element, data, formData = {}) => {
-  element._externalData = Object.assign({}, ButtonsText, data);
+  element._buttonsText = Object.assign({}, ButtonsText, data);
   const {
     formStartTime,
     formEndTime,
